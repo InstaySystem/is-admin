@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { getCookie } from "@/utils/cookies";
 import { ACCESS_TOKEN } from "@/constants/token";
-import { setTokenServer } from "@/api/auth";
+import { setTokenServer } from "@/apis/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 export const getAccessToken = () => {
@@ -84,7 +84,6 @@ async function refreshToken() {
   } catch (err) {
     // Refresh fail → đăng xuất local
     clearRefreshTimer();
-    useAuthStore.getState().clearProfile();
     // tuỳ bạn: có thể điều hướng sang /login ở đây
     // router.push('/login')
   }

@@ -65,7 +65,6 @@ axiosRequest.interceptors.response.use(
     // Nếu lỗi là 401 → refresh
     if (error.response?.status === 401) {
       if (originalRequest._retry) {
-        useAuthStore.getState().clearProfile();
         clearRefreshTimer();
         return Promise.reject("Unauthorized.");
       }
@@ -97,7 +96,6 @@ axiosRequest.interceptors.response.use(
               onRefreshed(data.accessToken);
             })
             .catch(() => {
-              useAuthStore.getState().clearProfile();
               clearRefreshTimer();
               reject("Session expired. Please login again.");
             })

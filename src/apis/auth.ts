@@ -1,9 +1,8 @@
 import axiosRequest from "@/config/axios";
 import axios from "axios";
-import { useAuthStore } from "@/stores/useAuthStore";
 
 export const login = (data: { username: string; password: string }) => {
-  return axiosRequest.post("/admin/sign-in", data);
+  return axiosRequest.post("auth/login", data);
 };
 
 export const register = (data: {
@@ -22,12 +21,12 @@ export const getMe = async () => {
   }
 };
 
-export const verifyOtp = async (registration_token: string, otp: string) => {
+export const verifyOtp = async (data: {
+  forgot_password_token: string;
+  otp: string;
+}) => {
   try {
-    const res = await axiosRequest.post("/auth/sign-up/verify", {
-      registration_token,
-      otp,
-    });
+    const res = await axiosRequest.post("/auth/forgot-password/verify", data);
     return res;
   } catch (error) {
     console.log(error);
@@ -61,7 +60,6 @@ export const deleteTokenServer = async () => {
 export const logOut = async () => {
   try {
     const res = await axiosRequest.post("/auth/sign-out");
-    useAuthStore.getState().clearProfile();
     deleteTokenServer();
     return res;
   } catch (error) {
@@ -75,10 +73,10 @@ export const forgotPassword = (email: string) => {
 };
 
 export const resetPassword = (data: {
-  newPassword: string;
-  registration_token: string;
+  new_password: string;
+  reset_password_token: string;
 }) => {
-  return axiosRequest.post("/auth/forgot-password/reset-password", data);
+  return axiosRequest.post("/auth/reset-password", data);
 };
 
 export const logout = () => {
