@@ -62,7 +62,7 @@ export default function ForgotPasswordForm() {
 
           <input
             {...register("email")}
-            placeholder="Username"
+            placeholder="Email"
             className="w-full py-4 pl-10 pr-10 border rounded-xl bg-gray-100 border-gray-300 outline-none focus:ring-2 focus:ring-blue-300"
           />
 

@@ -44,7 +44,7 @@ export const setTokenServer = async (data: object) => {
 };
 
 export const getRefreshToken = () => {
-  return axiosRequest.get("/auth/refresh");
+  return axiosRequest.post("/auth/refresh-token");
 };
 
 export const deleteTokenServer = async () => {
@@ -59,7 +59,7 @@ export const deleteTokenServer = async () => {
 
 export const logOut = async () => {
   try {
-    const res = await axiosRequest.post("/auth/sign-out");
+    const res = await axiosRequest.post("/auth/logout");
     deleteTokenServer();
     return res;
   } catch (error) {
@@ -80,5 +80,14 @@ export const resetPassword = (data: {
 };
 
 export const logout = () => {
-  return axiosRequest.post("/auth/sign-out");
+  return axiosRequest.post("/auth/logout");
+};
+
+export const updateInfo = (data: {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+  email?: string;
+}) => {
+  return axiosRequest.post("/auth/update-info", data);
 };

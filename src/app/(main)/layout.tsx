@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Sidebar from "@/components/ui/Sidebar";
+import Header from "@/components/layout/Header";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -33,9 +34,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
       />
 
       <div className="flex-1 flex flex-col bg-gray-50 overflow-auto">
-        <header className="w-full h-16 bg-white shadow-md flex items-center px-6">
-          <h1 className="text-xl font-bold">Dashboard</h1>
-        </header>
+        <Header />
 
         <main className="flex-1 p-6">{children}</main>
       </div>

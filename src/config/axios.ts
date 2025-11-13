@@ -84,7 +84,7 @@ axiosRequest.interceptors.response.use(
         if (!isRefreshing) {
           isRefreshing = true;
           refreshAxios
-            .post("/auth/refresh")
+            .post("/auth/refresh-token")
             .then(({ data }) => {
               // Cập nhật token mới
               setTokenServer(data);

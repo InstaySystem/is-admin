@@ -8,6 +8,7 @@ import { login } from "@/apis/auth";
 import { useRouter } from "next/navigation";
 import { FaUser, FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
+import { useAppStore } from "@/stores/useAppStore";
 
 const schema = yup.object().shape({
   username: yup.string().required("Vui lòng nhập username"),
@@ -33,12 +34,15 @@ export default function LoginForm() {
 
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const { setUser } = useAppStore();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   const onSubmit = async (data: IFormInput) => {
     try {
-      await login(data);
+      const res = await login(data);
+      console.log(res.data.data.user);
+      setUser(res.data.data.user);
       router.push("/dashboard");
     } catch (error) {
       console.error(error);
