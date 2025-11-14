@@ -41,7 +41,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       animate={{ width: isOpen ? 240 : 70 }}
       className="h-screen bg-white shadow-md flex flex-col overflow-hidden relative text-black transition-all duration-300"
     >
-      {/* Header */}
       <div className="flex items-center px-2 py-4 border-b border-gray-200">
         <button
           className="p-2 focus:outline-none cursor-pointer"
@@ -73,7 +72,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         </AnimatePresence>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 mt-4">
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
@@ -106,7 +104,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="px-4 py-4 border-t border-gray-200">
         <AnimatePresence>
           {isOpen && (

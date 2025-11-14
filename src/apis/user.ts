@@ -1,10 +1,8 @@
 import axiosRequest from "@/config/axios";
 import { CreateUserRequest, UpdateUserRequest } from "@/types/user";
 
-export const getUsers = async (page = 1, limit = 10) => {
-  return await axiosRequest.get("/admin/users", {
-    params: { page, limit },
-  });
+export const getUsers = async (params: unknown) => {
+  return await axiosRequest.get("/admin/users", { params });
 };
 
 export const getUserById = async (userId: number) => {

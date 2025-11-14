@@ -3,6 +3,7 @@ export interface Department {
   name?: string;
   display_name?: string;
   description?: string;
+  staff_count?: number;
 }
 
 export interface User {
@@ -37,13 +38,13 @@ export interface UpdateUserRequest {
 }
 
 export interface CreateUserRequest {
-  username: string; 
-  email: string; 
-  phone: string; 
-  password: string; 
-  role: "staff" | "admin"; 
-  is_active: boolean; 
-  first_name: string; 
+  username: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: "staff" | "admin";
+  is_active: boolean;
+  first_name: string;
   last_name: string;
-  department_id?: number | null; 
+  department_id?: number | null;
 }

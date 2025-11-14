@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
-import { getDepartments } from "@/apis/department";
+import {
+  getDepartments,
+  createDepartment,
+  updateDepartment,
+} from "@/apis/department";
 import { Department } from "@/types/user";
-import { useRouter } from "next/navigation";
 import {
   FaSearch,
   FaEdit,
@@ -13,77 +17,118 @@ import {
   FaUtensils,
   FaShieldAlt,
 } from "react-icons/fa";
+import { Input } from "antd";
+import DepartmentPopUp from "./components/DepartmentPopUp";
+import CustomAlert from "@/components/ui/CustomAlert";
 
 export default function DepartmentPage() {
-  const router = useRouter();
   const [departments, setDepartments] = useState<Department[]>([]);
 
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const res = await getDepartments();
-        setDepartments(res.data.data.departments || []);
-      } catch (err) {
-        console.log(err);
-      }
-    };
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupMode, setPopupMode] = useState<"create" | "view" | "edit">(
+    "view"
+  );
+  const [selectedDepartment, setSelectedDepartment] =
+    useState<Department | null>(null);
 
+  const [alert, setAlert] = useState({
+    open: false,
+    type: "success" as "success" | "error" | "info" | "warning",
+    message: "",
+  });
+
+  const showAlert = (type: typeof alert.type, message: string) => {
+    setAlert({ open: true, type, message });
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const res = await getDepartments();
+      setDepartments(res.data.data.departments || []);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
     fetchDepartments();
   }, []);
 
+  const openCreate = () => {
+    setSelectedDepartment(null);
+    setPopupMode("create");
+    setPopupOpen(true);
+  };
+
+  const openView = (dep: Department) => {
+    setSelectedDepartment(dep);
+    setPopupMode("view");
+    setPopupOpen(true);
+  };
+
+  const openEdit = (dep: Department) => {
+    setSelectedDepartment(dep);
+    setPopupMode("edit");
+    setPopupOpen(true);
+  };
+
+  const handlePopupOk = async (data: {
+    name?: string;
+    display_name?: string;
+    description?: string;
+  }) => {
+    try {
+      if (popupMode === "create") {
+        const res = await createDepartment(data);
+        showAlert("success", res.data.message);
+      } else if (popupMode === "edit" && selectedDepartment) {
+        const res = await updateDepartment(selectedDepartment.id, data);
+        showAlert("success", res.data.message);
+      }
+      await fetchDepartments();
+      setPopupOpen(false);
+    } catch (err: any) {
+      showAlert("error", err);
+    }
+  };
+
   const iconList = [
-    <FaUserShield key={1} size={26} className="text-blue-600" />,
-    <FaBroom key={2} size={26} className="text-green-600" />,
-    <FaUtensils key={3} size={26} className="text-orange-600" />,
-    <FaShieldAlt key={4} size={26} className="text-red-600" />,
-    <FaTools key={5} size={26} className="text-purple-600" />,
-  ];
-
-  const bgColors = [
-    "bg-blue-50 border-l-4 border-blue-500",
-    "bg-green-50 border-l-4 border-green-500",
-    "bg-orange-50 border-l-4 border-orange-500",
-    "bg-red-50 border-l-4 border-red-500",
-    "bg-purple-50 border-l-4 border-purple-500",
-  ];
-
-  const buttonColors = [
-    "bg-blue-600 hover:bg-blue-700",
-    "bg-green-600 hover:bg-green-700",
-    "bg-orange-600 hover:bg-orange-700",
-    "bg-red-600 hover:bg-red-700",
-    "bg-purple-600 hover:bg-purple-700",
+    <FaUserShield key={1} size={26} className="text-[#608DBC]" />,
+    <FaBroom key={2} size={26} className="text-[#608DBC]" />,
+    <FaUtensils key={3} size={26} className="text-[#608DBC]" />,
+    <FaShieldAlt key={4} size={26} className="text-[#608DBC]" />,
+    <FaTools key={5} size={26} className="text-[#608DBC]" />,
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div className="relative w-72">
-          <input
-            type="text"
+    <div className="p-4 md:p-6">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+        <div className="relative w-full md:w-72">
+          <Input
             placeholder="Tìm kiếm phòng ban..."
-            className="w-full border rounded-lg px-4 py-2 pl-10 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            prefix={<FaSearch className="text-gray-400" />}
+            className="text-black py-2"
+            size="large"
           />
-          <FaSearch className="absolute top-3 left-3 text-gray-400" />
         </div>
 
-        <button className="bg-[#608DBC]! text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+        <button
+          className="cursor-pointer bg-[#608DBC] text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition w-full md:w-auto"
+          onClick={openCreate}
+        >
           Thêm phòng ban
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {departments.map((dep, index) => (
           <div
             key={index}
-            className={`shadow-sm rounded-xl p-5 h-64 flex flex-col items-start justify-between ${
-              bgColors[index % bgColors.length]
-            }`}
+            className="shadow-sm rounded-xl p-4 bg-white flex flex-col justify-between h-auto"
           >
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start w-full">
               <div className="flex items-start gap-3">
                 {iconList[index % iconList.length]}
-
                 <div>
                   <h2 className="text-lg font-semibold text-gray-800">
                     {dep.name}
@@ -91,29 +136,46 @@ export default function DepartmentPage() {
                   <p className="text-gray-600 text-sm">{dep.display_name}</p>
                 </div>
               </div>
+
+              <div className="text-gray-700 text-sm flex flex-col items-end">
+                <span className="font-bold text-xl">{dep.staff_count}</span>
+                <span>nhân viên</span>
+              </div>
             </div>
 
-            {/* <p className="mt-3 text-gray-700 text-sm">
-              <span className="font-bold text-xl">{dep.employee_count}</span>{" "}
-              nhân viên
-            </p> */}
-
-            <div className="flex justify-between gap-2 items-center w-full">
+            <div className="flex mt-4 gap-2">
               <button
-                className={`self-end w-full py-2 rounded-lg text-white font-medium transition flex items-center justify-center gap-2 ${
-                  buttonColors[index % buttonColors.length]
-                }`}
+                className="cursor-pointer w-full py-2 rounded-lg text-white font-medium transition flex items-center justify-center gap-2 bg-[#608DBC]"
+                onClick={() => openView(dep)}
               >
                 👁 Xem chi tiết
               </button>
 
-              <button className="text-gray-600 hover:text-gray-800">
+              <button
+                className="cursor-pointer text-gray-600 hover:text-gray-800 border border-gray-200 px-3 rounded-md flex items-center"
+                onClick={() => openEdit(dep)}
+              >
                 <FaEdit size={18} />
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      <DepartmentPopUp
+        open={popupOpen}
+        mode={popupMode}
+        initialData={selectedDepartment}
+        onClose={() => setPopupOpen(false)}
+        onOk={handlePopupOk}
+      />
+
+      <CustomAlert
+        open={alert.open}
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert({ ...alert, open: false })}
+      />
     </div>
   );
 }

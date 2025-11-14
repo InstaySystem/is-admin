@@ -219,13 +219,13 @@ export default function ProfilePage() {
               {/* Vai trò + Nút phòng ban */}
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm">
-                  <FaUser className="text-green-600 flex-shrink-0" />
-                  <span className="font-medium flex-shrink-0">Username:</span>
+                  <FaUser className="text-green-600 shrink-0" />
+                  <span className="font-medium shrink-0">Username:</span>
                   <span>{user?.username}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-yellow-100 text-yellow-800 px-3 py-2 rounded-full text-sm flex-1">
-                  <FaUserShield className="text-yellow-600 flex-shrink-0" />
-                  <span className="font-medium flex-shrink-0">Vai trò:</span>
+                  <FaUserShield className="text-yellow-600 shrink-0" />
+                  <span className="font-medium shrink-0">Vai trò:</span>
                   <span>{user?.role}</span>
                 </div>
               </div>
