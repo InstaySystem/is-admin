@@ -4,12 +4,12 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { FaPen } from "react-icons/fa";
-import { getUserById, updateUser, getRoles } from "@/apis/user";
+import { getUserById, updateUser, getRoles, deleteUser } from "@/apis/user";
 import { Department, UpdateUserRequest, User } from "@/types/user";
 import DepartmentModal from "@/app/(main)/profile/components/DepartmentModal";
 import CustomAlert from "@/components/ui/CustomAlert";
 import { Button, CircularProgress, Switch } from "@mui/material";
-import { Select } from "antd";
+import CommonModal from "@/components/modals/CommonModal";
 
 export default function EditUserPage() {
   const router = useRouter();
@@ -25,6 +25,7 @@ export default function EditUserPage() {
     type: "success" as "success" | "error" | "info" | "warning",
     message: "",
   });
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const fetchUser = async () => {
     try {
@@ -60,6 +61,15 @@ export default function EditUserPage() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    try {
+      const res = await deleteUser(userId);
+      showAlert("success", res.data.message);
+    } catch (error: any) {
+      showAlert("error", error.message);
+    }
+  };
+
   useEffect(() => {
     fetchUser();
     fetchRoles();
@@ -78,15 +88,6 @@ export default function EditUserPage() {
 
   const handleSwitchChange = (checked: boolean) => {
     setFormData((prev) => ({ ...prev, is_active: checked }));
-  };
-
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFormData(
-      (prev): UpdateUserRequest => ({
-        ...prev,
-        role: e.target.value as "staff" | "admin",
-      })
-    );
   };
 
   const handleDepartmentUpdated = (
@@ -142,7 +143,6 @@ export default function EditUserPage() {
         )}
 
         <div className="bg-white shadow-md rounded-lg p-10 w-full max-w-4xl">
-          {/* --- Avatar + Họ tên --- */}
           <div className="flex items-center gap-6 mb-10">
             <div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center text-white text-3xl font-bold">
               {user?.first_name?.charAt(0) || "U"}
@@ -174,7 +174,6 @@ export default function EditUserPage() {
             </div>
           </div>
 
-          {/* --- Thông tin chi tiết --- */}
           <div className="bg-blue-100 rounded-lg p-6 mb-8">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Thông tin chi tiết
@@ -217,13 +216,32 @@ export default function EditUserPage() {
               </div>
 
               <div>
+                <label className="text-gray-700 font-medium">
+                  Ngày gia nhập
+                </label>
+                <input
+                  type="text"
+                  value={
+                    user?.created_at
+                      ? new Date(user.created_at).toLocaleDateString("vi-VN")
+                      : ""
+                  }
+                  disabled
+                  className="bg-gray-100 border border-gray-300 rounded px-3 py-2 w-full text-gray-600 cursor-not-allowed"
+                />
+              </div>
+
+              <div>
                 <label className="text-gray-700 font-medium block">
                   Vai trò
                 </label>
                 <select
-                  value={formData.role || "staff"} // default value
+                  value={formData.role || "staff"}
                   onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, role: e.target.value }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      role: e.target.value as "staff" | "admin",
+                    }))
                   }
                   className="bg-white border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                   style={{ height: "42px" }}
@@ -236,20 +254,28 @@ export default function EditUserPage() {
                 </select>
               </div>
 
-              <div className="flex items-center gap-3 mt-3">
-                <span className="text-gray-700 font-medium">Trạng thái:</span>
-                <Switch
-                  checked={formData.is_active ?? false}
-                  onChange={(e) => handleSwitchChange(e.target.checked)}
-                  color="primary"
-                />
-                <span
-                  className={`font-semibold ${
-                    formData.is_active ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {formData.is_active ? "Đang làm" : "Nghỉ làm"}
+              <div className="mt-5 flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-4 py-1">
+                <span className="text-gray-700 font-medium text-[15px]">
+                  Trạng thái
                 </span>
+
+                <div className="flex items-center gap-3">
+                  <Switch
+                    checked={formData.is_active ?? false}
+                    onChange={(e) => handleSwitchChange(e.target.checked)}
+                    color="primary"
+                  />
+
+                  <span
+                    className={`font-semibold text-sm px-3 py-1 rounded-full ${
+                      formData.is_active
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-600"
+                    }`}
+                  >
+                    {formData.is_active ? "Đang làm" : "Nghỉ làm"}
+                  </span>
+                </div>
               </div>
 
               <Button
@@ -263,20 +289,29 @@ export default function EditUserPage() {
             </div>
           </div>
 
-          <div className="flex justify-end items-center gap-3 mt-6">
+          <div className="flex justify-between items-center">
             <button
-              onClick={handleChangePassword}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-800 transition"
             >
-              Đổi mật khẩu
+              Xóa
             </button>
 
-            <button
-              onClick={handleUpdateInfo}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-            >
-              Lưu thay đổi
-            </button>
+            <div className="flex justify-end items-center gap-3 mt-6">
+              <button
+                onClick={handleChangePassword}
+                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+              >
+                Đổi mật khẩu
+              </button>
+
+              <button
+                onClick={handleUpdateInfo}
+                className="bg-[#608DBC] text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+              >
+                Lưu thay đổi
+              </button>
+            </div>
           </div>
 
           <DepartmentModal
@@ -287,6 +322,13 @@ export default function EditUserPage() {
             onUpdated={handleDepartmentUpdated}
             onSuccess={(msg) => showAlert("success", msg)}
             onError={(msg) => showAlert("error", msg)}
+          />
+
+          <CommonModal
+            open={isDeleteModalOpen}
+            title="Bạn có chắc chắn muốn xóa nhân viên này không?"
+            onClose={() => setIsDeleteModalOpen(false)}
+            onOk={handleDeleteUser}
           />
         </div>
       </div>

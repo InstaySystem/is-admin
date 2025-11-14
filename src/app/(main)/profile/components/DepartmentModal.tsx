@@ -143,7 +143,7 @@ export default function DepartmentModal({
       >
         <DialogTitle
           sx={{
-            bgcolor: "primary.main",
+            bgcolor: "#608DBC",
             color: "white",
             textAlign: "center",
             fontWeight: 700,
@@ -194,7 +194,6 @@ export default function DepartmentModal({
               variant="outlined"
               disabled
             />
-
           </Box>
 
           {loading && (
@@ -234,6 +233,7 @@ export default function DepartmentModal({
               onClick={handleSave}
               sx={{ borderRadius: 2, px: 4, textTransform: "none" }}
               disabled={loading}
+              className="bg-[#608DBC]!"
             >
               {loading ? "Đang lưu..." : "Lưu thay đổi"}
             </Button>

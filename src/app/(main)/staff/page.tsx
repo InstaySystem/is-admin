@@ -156,7 +156,11 @@ export default function EmployeeTable() {
             ]}
           />
         </div>
-        <Button type="primary" className="bg-[#608DBC]!">
+        <Button
+          type="primary"
+          className="bg-[#608DBC]!"
+          onClick={() => router.push("/staff/create")}
+        >
           Thêm nhân viên
         </Button>
       </div>

@@ -35,3 +35,15 @@ export interface UpdateUserRequest {
   is_active?: boolean;
   department_id?: number;
 }
+
+export interface CreateUserRequest {
+  username: string; 
+  email: string; 
+  phone: string; 
+  password: string; 
+  role: "staff" | "admin"; 
+  is_active: boolean; 
+  first_name: string; 
+  last_name: string;
+  department_id?: number | null; 
+}
