@@ -30,6 +30,7 @@ interface FormValues {
   is_active: boolean;
   service_type_id?: number;
   images: RcFile[];
+  description?: string;
 }
 
 export default function CreateServicePage() {
@@ -73,6 +74,7 @@ export default function CreateServicePage() {
       is_active: true,
       service_type_id: undefined,
       images: [],
+      description: "",
     },
   });
 
@@ -132,6 +134,7 @@ export default function CreateServicePage() {
           is_thumbnail: index === 0,
           sort_order: index + 1,
         })),
+        description: data.description,
       };
 
       const uploadPromises = presignedFiles.map((ps: any, index: number) => {
@@ -201,6 +204,26 @@ export default function CreateServicePage() {
                   min={0}
                   className="w-full"
                   placeholder="0.00"
+                />
+              )}
+            />
+          </Form.Item>
+          <Form.Item
+            label="Mô tả"
+            required
+            validateStatus={errors.description ? "error" : ""}
+            help={errors.description ? "Mô tả không được để trống" : ""}
+          >
+            <Controller
+              name="description"
+              control={control}
+              rules={{ required: true, minLength: 1 }}
+              render={({ field }) => (
+                <Input.TextArea
+                  {...field}
+                  className="w-full"
+                  placeholder="Nhập mô tả"
+                  rows={4}
                 />
               )}
             />

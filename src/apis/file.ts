@@ -8,3 +8,7 @@ export const generateUploadPresignedUrls = (payload: {
 }) => {
   return axiosRequest.post("/files/presigned-urls/uploads", payload);
 };
+
+export const generateViewPresignedUrls = (payload: { keys: string[] }) => {
+  return axiosRequest.post("/files/presigned-urls/views", payload);
+};

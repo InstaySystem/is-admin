@@ -80,7 +80,7 @@ export default function ManageService() {
   }, [fetchServices]);
 
   const handleEdit = (id: number) => {
-    router.push(`/service/${id}/edit`);
+    router.push(`/manage-services/${id}`);
   };
 
   const handleOpenDeleteModal = (id: number) => {
@@ -132,12 +132,6 @@ export default function ManageService() {
         ) : (
           <Tag color="red">Ngừng</Tag>
         ),
-    },
-    {
-      title: "Ngày tạo",
-      dataIndex: "created_at",
-      key: "created_at",
-      render: (value: string) => new Date(value).toLocaleDateString("vi-VN"),
     },
     {
       title: "Thao tác",

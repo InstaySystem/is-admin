@@ -64,7 +64,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 alt="Logo"
                 className="object-cover"
               />
-              <span className="text-blue-600 font-bold text-lg whitespace-nowrap">
+              <span className="text-[#608DBC] font-bold text-lg whitespace-nowrap">
                 Instay Admin
               </span>
             </motion.div>
@@ -81,7 +81,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 whileHover={{ scale: 1.05 }}
                 className={`flex items-center gap-3 cursor-pointer px-4 py-3 rounded-md transition-colors ${
                   isActive
-                    ? "bg-blue-100 text-blue-600 font-semibold"
+                    ? "bg-blue-100 text-[#608DBC] font-semibold"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
