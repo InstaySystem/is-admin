@@ -27,7 +27,7 @@ const menuItems = [
   { name: "Feedback Center", icon: <FaCommentDots />, path: "/feedback" },
   { name: "Analytics", icon: <FaChartLine />, path: "/analytics" },
   { name: "Marketing & Campaign", icon: <FaBullhorn />, path: "/marketing" },
-  { name: "Settings", icon: <FaCog />, path: "/settings" },
+  { name: "Services", icon: <FaCog />, path: "/manage-services" },
   { name: "Staff", icon: <FaUsers />, path: "/staff" },
   { name: "Department", icon: <FaUsers />, path: "/department" },
   { name: "Profile", icon: <FaUser />, path: "/profile" },

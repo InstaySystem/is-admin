@@ -1,35 +1,36 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Table, Tag, Space, Button, Input, Select, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
-import { getUsers, getRoles, deleteUser } from "@/apis/user";
-import { getDepartments } from "@/apis/department";
+import { getServices, deleteService } from "@/apis/services";
+import { getServiceTypes } from "@/apis/services";
 import CustomAlert from "@/components/ui/CustomAlert";
-import { Department, User } from "@/types/user";
+import { Service, ServiceType } from "@/types/service";
 import { SearchOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
-import { getInitialAvatar } from "@/utils/getInitialAvatar";
 import CommonModal from "@/components/modals/CommonModal";
 
-export default function ManageStaff() {
-  const [users, setUsers] = useState<User[]>([]);
+export default function ManageService() {
+  const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [search, setSearch] = useState("");
-  const [role, setRole] = useState<string | undefined>(undefined);
-  const [departments, setDepartments] = useState<Department[]>();
-  const [roles, setRoles] = useState();
-  const [departmentId, setDepartmentId] = useState<number | undefined>(
+  const [serviceTypeId, setServiceTypeId] = useState<number | undefined>(
     undefined
   );
   const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>();
+
   const [alert, setAlert] = useState({
     open: false,
     type: "success" as "success" | "error" | "info" | "warning",
     message: "",
   });
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
   const [page, setPage] = useState(1);
@@ -41,56 +42,45 @@ export default function ManageStaff() {
     setAlert({ open: true, type, message });
   };
 
-  const fetchUsers = useCallback(async () => {
+  const fetchServices = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await getUsers({
+      const response = await getServices({
         page,
         limit,
         search,
-        role,
-        department_id: departmentId,
+        service_type_id: serviceTypeId,
         is_active: isActive,
         sort: "created_at",
         order: "desc",
       });
 
-      setUsers(response.data.data.users || []);
+      setServices(response.data.data.services || []);
     } catch (err: any) {
-      message.error(err.message || "Lỗi tải danh sách nhân viên");
+      message.error(err.message || "Lỗi tải danh sách dịch vụ");
     }
     setLoading(false);
-  }, [page, limit, search, role, departmentId, isActive]);
+  }, [page, limit, search, serviceTypeId, isActive]);
 
-  const fetchDepartments = useCallback(async () => {
+  const fetchServiceTypes = useCallback(async () => {
     try {
-      const response = await getDepartments();
-      setDepartments(response.data.data.departments || []);
+      const res = await getServiceTypes();
+      setServiceTypes(res.data.data.service_types || []);
     } catch (err: any) {
-      message.error(err.message || "Lỗi tải danh sách phòng ban");
-    }
-  }, []);
-
-  const fetchRoles = useCallback(async () => {
-    try {
-      const response = await getRoles();
-      setRoles(response.data.data.roles || []);
-    } catch (err: any) {
-      message.error(err.message || "Lỗi tải danh sách vai trò");
+      message.error("Lỗi tải loại dịch vụ");
     }
   }, []);
 
   useEffect(() => {
-    fetchDepartments();
-    fetchRoles();
+    fetchServiceTypes();
   }, []);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchServices();
+  }, [fetchServices]);
 
   const handleEdit = (id: number) => {
-    router.push(`/staff/${id}/edit`);
+    router.push(`/service/${id}/edit`);
   };
 
   const handleOpenDeleteModal = (id: number) => {
@@ -102,11 +92,11 @@ export default function ManageStaff() {
     if (idToDelete === null) return;
 
     try {
-      const res = await deleteUser(idToDelete);
-      showAlert("success", res.data.message || "Xóa nhân viên thành công");
+      const res = await deleteService(idToDelete);
+      showAlert("success", res.data.message || "Xóa dịch vụ thành công");
       setIsModalOpen(false);
       setIdToDelete(null);
-      fetchUsers();
+      fetchServices();
     } catch (error: any) {
       showAlert("error", error);
     }
@@ -114,41 +104,23 @@ export default function ManageStaff() {
 
   const columns = [
     {
-      title: "Họ và tên",
+      title: "Tên dịch vụ",
+      dataIndex: "name",
       key: "name",
-      render: (_: any, record: User) => {
-        const fullName = `${record.first_name} ${record.last_name}`;
-        const { initials, color } = getInitialAvatar(fullName);
-
-        return (
-          <div className="flex items-center gap-2">
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-semibold text-base"
-              style={{ backgroundColor: color }}
-            >
-              {initials}
-            </div>
-            <span>{fullName}</span>
-          </div>
-        );
-      },
+      render: (name: string) => <span className="font-medium">{name}</span>,
     },
     {
-      title: "Vai trò",
-      dataIndex: "role",
-      key: "role",
-      render: (role: string) =>
-        role === "admin" ? (
-          <Tag color="purple">Admin</Tag>
-        ) : (
-          <Tag color="blue">Nhân viên</Tag>
-        ),
+      title: "Loại dịch vụ",
+      key: "service_type",
+      render: (_: any, record: Service) =>
+        record.service_type ? record.service_type.name : "—",
     },
     {
-      title: "Phòng ban",
-      key: "department",
-      render: (_: any, record: User) =>
-        record.department ? record.department.display_name : "—",
+      title: "Price",
+      dataIndex: "price",
+      key: "price",
+      render: (price: number) =>
+        price.toLocaleString("en-US", { style: "currency", currency: "USD" }),
     },
     {
       title: "Trạng thái",
@@ -156,7 +128,7 @@ export default function ManageStaff() {
       key: "is_active",
       render: (active: boolean) =>
         active ? (
-          <Tag color="green">Đang làm</Tag>
+          <Tag color="green">Hoạt động</Tag>
         ) : (
           <Tag color="red">Ngừng</Tag>
         ),
@@ -170,7 +142,7 @@ export default function ManageStaff() {
     {
       title: "Thao tác",
       key: "action",
-      render: (_: any, record: User) => (
+      render: (_: any, record: Service) => (
         <Space>
           <Button
             size="small"
@@ -196,9 +168,9 @@ export default function ManageStaff() {
     <div style={{ padding: 24 }} className="text-lg">
       <div className="flex flex-wrap gap-3 justify-between items-start mb-4 text-lg">
         <div className="flex flex-wrap gap-3 items-center flex-1">
-          <Space.Compact className="min-w-[200px] w-[250px] max-sm:w-full">
+          <Space.Compact className="min-w-[200px] w-[250px]">
             <Input
-              placeholder="Tìm kiếm nhân viên..."
+              placeholder="Tìm kiếm dịch vụ..."
               allowClear
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -207,37 +179,21 @@ export default function ManageStaff() {
               type="primary"
               icon={<SearchOutlined />}
               className="bg-[#608DBC]!"
-              onClick={() => fetchUsers()}
+              onClick={() => fetchServices()}
             />
           </Space.Compact>
 
           <Select
             allowClear
-            placeholder="Vai trò"
-            className="min-w-40 max-sm:w-full"
-            value={role}
-            onChange={setRole}
+            placeholder="Loại dịch vụ"
+            className="min-w-[200px]"
+            value={serviceTypeId}
+            onChange={setServiceTypeId}
             options={
-              roles
-                ? Object.entries(roles).map(([label, value]) => ({
-                    label,
-                    value,
-                  }))
-                : []
-            }
-          />
-
-          <Select
-            allowClear
-            placeholder="Phòng ban"
-            className="min-w-[200px] max-sm:w-full"
-            value={departmentId}
-            onChange={setDepartmentId}
-            options={
-              departments
-                ? departments.map((d) => ({
-                    label: d.display_name,
-                    value: d.id,
+              serviceTypes
+                ? serviceTypes.map((t) => ({
+                    label: t.name,
+                    value: t.id,
                   }))
                 : []
             }
@@ -246,27 +202,28 @@ export default function ManageStaff() {
           <Select
             allowClear
             placeholder="Trạng thái"
-            className="min-w-[150px] max-sm:w-full"
+            className="min-w-[150px]"
             value={isActive}
             onChange={setIsActive}
             options={[
-              { value: true, label: "Đang làm" },
+              { value: true, label: "Hoạt động" },
               { value: false, label: "Ngừng" },
             ]}
           />
         </div>
+
         <Button
           type="primary"
-          className="bg-[#608DBC]! max-sm:w-full"
-          onClick={() => router.push("/staff/create")}
+          className="bg-[#608DBC]!"
+          onClick={() => router.push("/manage-services/create")}
         >
-          Thêm nhân viên
+          Thêm dịch vụ
         </Button>
       </div>
 
       <Table
         columns={columns}
-        dataSource={users}
+        dataSource={services}
         loading={loading}
         pagination={false}
         rowKey="id"
@@ -281,7 +238,7 @@ export default function ManageStaff() {
 
       <CommonModal
         open={isModalOpen}
-        title="Xác nhận xóa nhân viên"
+        title="Xác nhận xóa dịch vụ"
         onClose={() => setIsModalOpen(false)}
         onOk={handleDelete}
       />

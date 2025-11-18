@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Avatar, Dropdown, Menu, Button, message } from "antd";
+import { Avatar, Dropdown, Button, message } from "antd";
 import { LogoutOutlined, UserOutlined, DownOutlined } from "@ant-design/icons";
 import { logOut } from "@/apis/auth";
 import { useAppStore } from "@/stores/useAppStore";
@@ -24,30 +24,28 @@ export default function Header() {
 
   const handleGoProfile = () => router.push("/profile");
 
-  const menu = (
-    <Menu className="!min-w-[280px] !rounded-xl !shadow-lg !border !border-gray-100">
-      <Menu.Item
-        key="profile"
-        onClick={handleGoProfile}
-        icon={<UserOutlined className="text-base" />}
-        className="!mx-2 !rounded-lg !py-3 hover:!bg-blue-50 transition-all"
-      >
-        <span className="font-medium text-gray-700">Hồ sơ cá nhân</span>
-      </Menu.Item>
-
-      <Menu.Divider className="!my-2" />
-
-      <Menu.Item
-        key="logout"
-        onClick={handleLogout}
-        icon={<LogoutOutlined className="text-base" />}
-        danger
-        className="mx-2! rounded-lg! py-3! hover:bg-red-50! transition-all"
-      >
-        <span className="font-medium">Đăng xuất</span>
-      </Menu.Item>
-    </Menu>
-  );
+  // 🔥 NEW — menu dùng items thay vì overlay
+  const menuItems = [
+    {
+      key: "profile",
+      label: <span className="font-medium text-gray-700">Hồ sơ cá nhân</span>,
+      icon: <UserOutlined className="text-base" />,
+      onClick: handleGoProfile,
+      className: "!mx-2 !rounded-lg !py-3 hover:!bg-blue-50 transition-all",
+    },
+    {
+      type: "divider" as const,
+    },
+    {
+      key: "logout",
+      label: <span className="font-medium text-red-600">Đăng xuất</span>,
+      icon: <LogoutOutlined className="text-base text-red-600" />,
+      danger: true,
+      onClick: handleLogout,
+      className: "!mx-2 !rounded-lg !py-3 hover:!bg-red-50 transition-all",
+      type: "item" as const,
+    },
+  ];
 
   const getPageTitle = () => {
     if (pathname.startsWith("/profile")) return "Trang cá nhân";
@@ -56,6 +54,7 @@ export default function Header() {
     if (pathname.startsWith("/settings")) return "Cài đặt";
     if (pathname.startsWith("/staff")) return "Quản lý nhân viên";
     if (pathname.startsWith("/department")) return "Quản lý phòng ban";
+    if (pathname.startsWith("/manage-services")) return "Quản lý dịch vụ";
     return "Trang chủ";
   };
 
@@ -71,17 +70,16 @@ export default function Header() {
 
         {user && (
           <Dropdown
-            overlay={menu}
+            menu={{ items: menuItems }}
             trigger={["click"]}
             placement="bottomRight"
-            overlayClassName="header-dropdown"
           >
             <Button
               type="text"
-              className="!flex items-center gap-3 !px-4 !py-2 !h-auto hover:!bg-gray-50 !rounded-xl transition-all duration-200 group border border-transparent hover:!border-gray-200"
+              className="flex! items-center gap-3 px-4! py-2! !h-auto! hover:bg-gray-50! rounded-xl! transition-all duration-200 group border border-transparent hover:border-gray-200!"
             >
               <Avatar
-                className="!bg-gradient-to-br !from-blue-500 !to-blue-600 !text-white !shadow-md group-hover:!shadow-lg transition-shadow"
+                className="bg-linear-to-br! !from-blue-500! to-blue-600! text-white! shadow-md! group-hover:shadow-lg! transition-shadow"
                 size={44}
               >
                 <span className="text-base font-semibold">
