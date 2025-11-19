@@ -213,6 +213,14 @@ export default function ManageService() {
         >
           Thêm dịch vụ
         </Button>
+
+        <Button
+          type="primary"
+          className="bg-[#608DBC]!"
+          onClick={() => router.push("/manage-services/service-types")}
+        >
+          Loại dịch vụ
+        </Button>
       </div>
 
       <Table

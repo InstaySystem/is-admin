@@ -47,6 +47,7 @@ export default function DepartmentPopUp({
 
   useEffect(() => {
     if (initialData && mode !== "create") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({
         name: initialData.name || "",
         display_name: initialData.display_name || "",
