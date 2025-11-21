@@ -11,6 +11,8 @@ import {
   FaCommentDots,
   FaBullhorn,
   FaUser,
+  FaRestroom,
+  FaRegQuestionCircle,
 } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
 import Image from "next/image";
@@ -27,7 +29,9 @@ const menuItems = [
   { name: "Feedback Center", icon: <FaCommentDots />, path: "/feedback" },
   { name: "Analytics", icon: <FaChartLine />, path: "/analytics" },
   { name: "Marketing & Campaign", icon: <FaBullhorn />, path: "/marketing" },
+  { name: "Rooms", icon: <FaRestroom />, path: "/manage-rooms" },
   { name: "Services", icon: <FaCog />, path: "/manage-services" },
+  { name: "Request", icon: <FaRegQuestionCircle />, path: "/manage-requests" },
   { name: "Staff", icon: <FaUsers />, path: "/staff" },
   { name: "Department", icon: <FaUsers />, path: "/department" },
   { name: "Profile", icon: <FaUser />, path: "/profile" },

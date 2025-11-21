@@ -145,16 +145,10 @@ export default function ManageServiceTypes() {
       render: (name: string) => <span className="font-medium">{name}</span>,
     },
     {
-      title: "Slug",
-      dataIndex: "slug",
-      key: "slug",
-      render: (slug: string) => <span className="text-gray-600">{slug}</span>,
-    },
-    {
       title: "Phòng ban",
       key: "department",
       render: (_: any, record: ServiceType) =>
-        record.department ? record.department.name : "—",
+        record.department ? record.department.display_name : "—",
     },
     {
       title: "Số lượng dịch vụ",
