@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosRequest from "@/config/axios";
-import { Room, CreateRoomRequest, UpdateRoomRequest } from "@/types/room";
+import { CreateRoomRequest, UpdateRoomRequest } from "@/types/room";
 
 export const getRooms = async (params?: any) => {
   return await axiosRequest.get("/admin/rooms", { params });

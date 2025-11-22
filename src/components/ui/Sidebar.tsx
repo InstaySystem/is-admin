@@ -13,6 +13,7 @@ import {
   FaUser,
   FaRestroom,
   FaRegQuestionCircle,
+  FaBookMedical,
 } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
 import Image from "next/image";
@@ -29,6 +30,7 @@ const menuItems = [
   { name: "Feedback Center", icon: <FaCommentDots />, path: "/feedback" },
   { name: "Analytics", icon: <FaChartLine />, path: "/analytics" },
   { name: "Marketing & Campaign", icon: <FaBullhorn />, path: "/marketing" },
+  { name: "Booking", icon: <FaBookMedical />, path: "/manage-booking" },
   { name: "Rooms", icon: <FaRestroom />, path: "/manage-rooms" },
   { name: "Services", icon: <FaCog />, path: "/manage-services" },
   { name: "Request", icon: <FaRegQuestionCircle />, path: "/manage-requests" },
@@ -117,7 +119,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
               exit={{ opacity: 0 }}
               className="text-gray-600 text-sm"
             >
-              &copy; 2025 Instay Admin
+              &copy; 2025 Instay Application
             </motion.div>
           )}
         </AnimatePresence>

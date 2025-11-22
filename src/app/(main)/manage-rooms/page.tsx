@@ -2,21 +2,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Table, Space, Button, Input, Select, message } from "antd";
+import { Table, Space, Button, Input, Select } from "antd";
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-
-import { getRooms, deleteRoom } from "@/apis/room";
-
+import { getFloors } from "@/apis/floor";
+import { getRooms, deleteRoom, createRoom, updateRoom } from "@/apis/room";
 import { getRoomTypes } from "@/apis/room_type";
-
-import { Room } from "@/types/room";
-import { RoomType } from "@/types/room";
-import { Floor } from "@/types/room";
-
+import { Room, Floor, RoomType } from "@/types/room";
 import CustomAlert from "@/components/ui/CustomAlert";
 import CommonModal from "@/components/modals/CommonModal";
 import { SearchOutlined } from "@ant-design/icons";
+import RoomModal from "./components/RoomModal";
 
 export default function ManageRoom() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -35,17 +30,39 @@ export default function ManageRoom() {
     message: "",
   });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
+
+  const [roomModalOpen, setRoomModalOpen] = useState(false);
+  const [roomModalMode, setRoomModalMode] = useState<"create" | "edit">(
+    "create"
+  );
+  const [roomModalInitial, setRoomModalInitial] = useState<Room | null>(null);
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
-  const router = useRouter();
-
   const showAlert = (type: typeof alert.type, message: string) => {
     setAlert({ open: true, type, message });
   };
+
+  const fetchFloors = useCallback(async () => {
+    try {
+      const res = await getFloors();
+      setFloors(res.data.data.floors || []);
+    } catch (err: any) {
+      showAlert("error", err.message || "Lỗi tải danh sách tầng");
+    }
+  }, []);
+
+  const fetchRoomTypes = useCallback(async () => {
+    try {
+      const res = await getRoomTypes();
+      setRoomTypes(res.data.data.room_types || []);
+    } catch (err: any) {
+      showAlert("error", err.message || "Lỗi tải danh sách loại phòng");
+    }
+  }, []);
 
   const fetchRooms = useCallback(async () => {
     setLoading(true);
@@ -62,21 +79,13 @@ export default function ManageRoom() {
 
       setRooms(response.data.data.rooms || []);
     } catch (err: any) {
-      showAlert("error", err.message || "Lỗi tải danh sách loại phòng");
+      showAlert("error", err.message || "Lỗi tải danh sách phòng");
     }
     setLoading(false);
   }, [page, limit, search, roomTypeId, floorId]);
 
-  const fetchRoomTypes = useCallback(async () => {
-    try {
-      const res = await getRoomTypes();
-      setRoomTypes(res.data.data.room_types || []);
-    } catch (err: any) {
-      showAlert("error", err.message || "Lỗi tải danh sách loại phòng");
-    }
-  }, []);
-
   useEffect(() => {
+    fetchFloors();
     fetchRoomTypes();
   }, []);
 
@@ -84,26 +93,51 @@ export default function ManageRoom() {
     fetchRooms();
   }, [fetchRooms]);
 
-  const handleEdit = (id: string) => {
-    router.push(`/manage-rooms/${id}`);
+  const handleCreate = () => {
+    setRoomModalMode("create");
+    setRoomModalInitial(null);
+    setRoomModalOpen(true);
+  };
+
+  const handleEdit = (room: Room) => {
+    setRoomModalMode("edit");
+    setRoomModalInitial(room);
+    setRoomModalOpen(true);
   };
 
   const handleOpenDeleteModal = (id: string) => {
     setIdToDelete(id);
-    setIsModalOpen(true);
+    setIsDeleteModalOpen(true);
   };
 
   const handleDelete = async () => {
-    if (idToDelete === null) return;
+    if (!idToDelete) return;
 
     try {
       const res = await deleteRoom(idToDelete);
       showAlert("success", res.data.message || "Xóa phòng thành công");
-      setIsModalOpen(false);
+      setIsDeleteModalOpen(false);
       setIdToDelete(null);
       fetchRooms();
     } catch (error: any) {
-      showAlert("error", error);
+      showAlert("error", error.message || "Lỗi xóa phòng");
+    }
+  };
+
+  const handleSaveRoom = async (data: any) => {
+    try {
+      if (roomModalMode === "create") {
+        const res = await createRoom(data);
+        showAlert("success", res.data.message || "Tạo phòng thành công");
+      } else {
+        const res = await updateRoom(roomModalInitial!.id, data);
+        showAlert("success", res.data.message || "Cập nhật phòng thành công");
+      }
+
+      setRoomModalOpen(false);
+      fetchRooms();
+    } catch (error: any) {
+      showAlert("error", error.message || "Có lỗi xảy ra");
     }
   };
 
@@ -127,11 +161,6 @@ export default function ManageRoom() {
         record.floor ? record.floor.name : "—",
     },
     {
-      title: "Slug",
-      dataIndex: "slug",
-      key: "slug",
-    },
-    {
       title: "Thao tác",
       key: "action",
       render: (_: any, record: Room) => (
@@ -140,7 +169,7 @@ export default function ManageRoom() {
             size="small"
             type="primary"
             className="bg-[#608DBC]!"
-            onClick={() => handleEdit(record.id)}
+            onClick={() => handleEdit(record)}
           >
             Sửa
           </Button>
@@ -200,18 +229,14 @@ export default function ManageRoom() {
           />
         </div>
 
-        <Button
-          type="primary"
-          className="bg-[#608DBC]!"
-          onClick={() => router.push("/manage-rooms/create")}
-        >
+        <Button type="primary" className="bg-[#608DBC]!" onClick={handleCreate}>
           Thêm phòng
         </Button>
 
         <Button
           type="primary"
           className="bg-[#608DBC]!"
-          onClick={() => router.push("/manage-rooms/room-types")}
+          onClick={() => (window.location.href = "/manage-rooms/room-types")}
         >
           Loại phòng
         </Button>
@@ -233,10 +258,21 @@ export default function ManageRoom() {
       />
 
       <CommonModal
-        open={isModalOpen}
+        open={isDeleteModalOpen}
         title="Xác nhận xóa phòng"
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => setIsDeleteModalOpen(false)}
         onOk={handleDelete}
+      />
+
+      {/* ROOM MODAL */}
+      <RoomModal
+        open={roomModalOpen}
+        mode={roomModalMode}
+        initialData={roomModalInitial}
+        floors={floors}
+        roomTypes={roomTypes}
+        onClose={() => setRoomModalOpen(false)}
+        onOk={handleSaveRoom}
       />
     </div>
   );

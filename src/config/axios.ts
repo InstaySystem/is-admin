@@ -9,7 +9,6 @@ import qs from "qs";
 import { getCookie } from "@/utils/cookies";
 import { ACCESS_TOKEN } from "@/constants/token";
 import { setTokenServer } from "@/apis/auth";
-import { useAuthStore } from "@/stores/useAuthStore";
 import { scheduleTokenRefresh, clearRefreshTimer } from "@/utils/token";
 
 type IRequestCb = (token: string) => void;
@@ -26,7 +25,7 @@ const onRefreshed = (newToken: string) => {
   refreshSubscribers = [];
 };
 
-// Axios chính cho request app
+// Axios chính cho app
 const axiosRequest: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 10000,
@@ -35,13 +34,13 @@ const axiosRequest: AxiosInstance = axios.create({
     qs.stringify(params, { arrayFormat: "indices", allowDots: true }),
 });
 
-// Axios riêng cho refresh để tránh interceptor loop
+// Axios riêng cho refresh token
 const refreshAxios = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
 });
 
-// GẮN ACCESS TOKEN VÀO HEADER
+// Gắn token vào header
 axiosRequest.interceptors.request.use(
   (config) => {
     const token = getCookie(ACCESS_TOKEN);
@@ -54,7 +53,7 @@ axiosRequest.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// XỬ LÝ RESPONSE: 401 → REFRESH + QUEUE
+// Interceptor response
 axiosRequest.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
@@ -62,15 +61,14 @@ axiosRequest.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // Nếu lỗi là 401 → refresh
     if (error.response?.status === 401) {
       if (originalRequest._retry) {
         clearRefreshTimer();
         return Promise.reject("Unauthorized.");
       }
+
       originalRequest._retry = true;
 
-      // Hàng đợi các request trong lúc refresh diễn ra
       return new Promise((resolve, reject) => {
         subscribeTokenRefresh((newToken: string) => {
           if (originalRequest.headers) {
@@ -86,17 +84,21 @@ axiosRequest.interceptors.response.use(
           refreshAxios
             .post("/auth/refresh-token")
             .then(({ data }) => {
-              // Cập nhật token mới
+              if (!data?.accessToken)
+                throw new Error("No accessToken in response");
+
+              // Lưu token ngay
               setTokenServer(data);
 
-              // Đặt lại lịch auto-refresh theo token mới
+              // Đặt lại lịch refresh
               scheduleTokenRefresh();
 
-              // Đánh thức các request đang chờ
+              // Thức dậy các request đang chờ
               onRefreshed(data.accessToken);
             })
-            .catch(() => {
+            .catch((err) => {
               clearRefreshTimer();
+              refreshSubscribers = [];
               reject("Session expired. Please login again.");
             })
             .finally(() => {
@@ -110,12 +112,11 @@ axiosRequest.interceptors.response.use(
       return Promise.reject("Network error. Please check your connection.");
     }
 
-    // Chuẩn hoá message
     return Promise.reject(
       error.response?.data &&
         typeof error.response.data === "object" &&
-        "message" in (error.response.data as object)
-        ? (error.response?.data as { message: string }).message
+        "message" in error.response.data
+        ? (error.response.data as { message: string }).message
         : "Unexpected error."
     );
   }
@@ -123,11 +124,7 @@ axiosRequest.interceptors.response.use(
 
 export default axiosRequest;
 
-/**
- * (TUỲ CHỌN) Hàm bootstrap khi app khởi chạy ở client:
- * - Nếu đã có access token trong cookie → đặt lịch auto-refresh.
- * - Gọi nó một lần ở layout client hoặc AppProvider.
- */
+// Bootstrap khi app khởi chạy
 export function bootstrapAuthTimer() {
   const token = getCookie(ACCESS_TOKEN);
   if (token) {

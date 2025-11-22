@@ -120,7 +120,7 @@ export default function ManageService() {
       dataIndex: "price",
       key: "price",
       render: (price: number) =>
-        price.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        price.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
     },
     {
       title: "Trạng thái",

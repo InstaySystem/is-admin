@@ -17,7 +17,7 @@ export interface Room {
 }
 
 export interface RoomType {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   created_at: string;
@@ -29,7 +29,7 @@ export interface RoomType {
 }
 
 export interface Floor {
-  id: string;
+  id: number;
   name: string;
   rooms?: Room[];
 }
