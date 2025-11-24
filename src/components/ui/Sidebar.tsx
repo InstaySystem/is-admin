@@ -14,6 +14,7 @@ import {
   FaRestroom,
   FaRegQuestionCircle,
   FaBookMedical,
+  FaJediOrder,
 } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
 import Image from "next/image";
@@ -26,11 +27,8 @@ interface SidebarProps {
 const menuItems = [
   { name: "Dashboard", icon: <FaChartLine />, path: "/dashboard" },
   { name: "Guest Requests", icon: <FaBell />, path: "/guest-requests" },
-  { name: "Services Management", icon: <FaCog />, path: "/services" },
-  { name: "Feedback Center", icon: <FaCommentDots />, path: "/feedback" },
-  { name: "Analytics", icon: <FaChartLine />, path: "/analytics" },
-  { name: "Marketing & Campaign", icon: <FaBullhorn />, path: "/marketing" },
   { name: "Booking", icon: <FaBookMedical />, path: "/manage-booking" },
+  { name: "Order Rooms", icon: <FaJediOrder />, path: "/order-rooms/create" },
   { name: "Rooms", icon: <FaRestroom />, path: "/manage-rooms" },
   { name: "Services", icon: <FaCog />, path: "/manage-services" },
   { name: "Request", icon: <FaRegQuestionCircle />, path: "/manage-requests" },
