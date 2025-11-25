@@ -41,6 +41,7 @@ export default function ManageRoom() {
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const showAlert = (type: typeof alert.type, message: string) => {
     setAlert({ open: true, type, message });
@@ -78,6 +79,7 @@ export default function ManageRoom() {
       });
 
       setRooms(response.data.data.rooms || []);
+      setTotal(response.data.data.meta.total || 0);
     } catch (err: any) {
       showAlert("error", err.message || "Lỗi tải danh sách phòng");
     }
@@ -246,7 +248,13 @@ export default function ManageRoom() {
         columns={columns}
         dataSource={rooms}
         loading={loading}
-        pagination={false}
+        pagination={{
+          current: page,
+          pageSize: limit,
+          total: total,
+          onChange: (p) => setPage(p),
+          showSizeChanger: false,
+        }}
         rowKey="id"
         className="text-lg"
       />

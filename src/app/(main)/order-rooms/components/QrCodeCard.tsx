@@ -2,8 +2,10 @@
 
 import QRCode from "react-qr-code";
 
-export default function QRCodeCard(code: { code: string }) {
-  const url = `http://localhost:3000/order-rooms/${code}`;
+export default function QRCodeCard({ code }: { code: string }) {
+  const url = `http://localhost:3000/order-rooms/${encodeURIComponent(
+    code
+  )}`;
 
   return (
     <div className="mt-6 border rounded p-4">

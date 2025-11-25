@@ -12,6 +12,7 @@ import {
   getServiceTypes,
   getServiceById,
   updateService,
+  deleteService,
 } from "@/apis/services";
 import {
   generateUploadPresignedUrls,
@@ -19,6 +20,8 @@ import {
 } from "@/apis/file";
 import { ServiceType } from "@/types/service";
 import { getBase64 } from "@/utils/image";
+import { useRouter } from "next/navigation";
+import CommonModal from "@/components/modals/CommonModal";
 
 interface FormValues {
   name: string;
@@ -39,9 +42,11 @@ export default function EditServicePage() {
   });
   const [fileList, setFileList] = useState<any[]>([]);
   const [originalData, setOriginalData] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const params = useParams();
   const serviceId = Number(params.id);
+  const router = useRouter();
 
   const {
     control,
@@ -102,16 +107,19 @@ export default function EditServicePage() {
           const urlsRes = await generateViewPresignedUrls({ keys });
           const presignedUrls = urlsRes.data.data.presigned_url;
 
-          const mapped = service.images.map((img: any, index: number) => ({
-            uid: `old-${img.id}`,
-            id: img.id,
-            key: img.key,
-            name: img.name || img.key,
-            url: replaceUrl(presignedUrls[index]?.url || img.url || ""),
-            preview: replaceUrl(presignedUrls[index]?.url || img.url || ""),
-            is_thumbnail: img.is_thumbnail,
-            sort_order: img.sort_order,
-          }));
+          const mapped = service.images.map((img: any, index: number) => {
+            const result = {
+              uid: `old-${img.id}`,
+              id: img.id,
+              key: img.key,
+              name: img.name || img.key,
+              url: replaceUrl(presignedUrls[index]?.url || img.url || ""),
+              preview: replaceUrl(presignedUrls[index]?.url || img.url || ""),
+              is_thumbnail: img.is_thumbnail,
+              sort_order: img.sort_order,
+            };
+            return result;
+          });
 
           setFileList(mapped);
           setValue("images", mapped);
@@ -167,6 +175,23 @@ export default function EditServicePage() {
       const originalIds = (originalData.images || []).map((img) => img.id);
       const currentIds = existingFiles.map((img) => img.id);
       const deleteImages = originalIds.filter((id) => !currentIds.includes(id));
+
+      console.log("=== SUBMIT DEBUG ===");
+      console.log("originalData.images:", originalData.images);
+      console.log(
+        "currentFiles:",
+        currentFiles.map((f) => ({ uid: f.uid, id: f.id }))
+      );
+      console.log("newFiles count:", newFiles.length);
+      console.log("existingFiles count:", existingFiles.length);
+      console.log(
+        "existingFiles IDs:",
+        existingFiles.map((f) => f.id)
+      );
+      console.log("originalIds:", originalIds);
+      console.log("currentIds:", currentIds);
+      console.log("deleteImages:", deleteImages);
+      console.log("===================");
 
       // Handle new images
       let newImagesPayload: any[] = [];
@@ -250,6 +275,18 @@ export default function EditServicePage() {
       showAlert("error", err.message || "Cập nhật dịch vụ thất bại");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteService = async () => {
+    try {
+      setLoading(true);
+      const res = await deleteService(serviceId);
+      showAlert("success", res.data.message || "Xóa dịch vụ thành công!");
+      router.push("/manage-services");
+    } catch (err: any) {
+      console.error(err);
+      showAlert("error", err.message || "Xóa dịch vụ thất bại");
     }
   };
 
@@ -366,6 +403,9 @@ export default function EditServicePage() {
         </Form.Item>
 
         <div className="flex justify-end mt-8 gap-3">
+          <Button type="primary" onClick={() => setIsModalOpen(true)} danger>
+            Xóa
+          </Button>
           <Button onClick={() => history.back()}>Hủy bỏ</Button>
           <Button
             type="primary"
@@ -382,6 +422,12 @@ export default function EditServicePage() {
         open={alert.open}
         type={alert.type}
         message={alert.message}
+      />
+      <CommonModal
+        open={isModalOpen}
+        title="Xác nhận xóa dịch vụ"
+        onClose={() => setIsModalOpen(false)}
+        onOk={handleDeleteService}
       />
     </div>
   );

@@ -11,6 +11,7 @@ interface Props {
   setFileList: (files: any[]) => void;
   setValue: (field: string, value: any[]) => void;
   handlePreview: (file: any) => void;
+  disabled?: boolean;
 }
 
 const { Dragger } = Upload;
@@ -20,6 +21,7 @@ export default function ImagesUploader({
   setFileList,
   setValue,
   handlePreview,
+  disabled = false,
 }: Props) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
@@ -30,22 +32,29 @@ export default function ImagesUploader({
   const handleUploadChange = async (info: any) => {
     const updated = await Promise.all(
       info.fileList.map(async (fileItem: any) => {
+        const existingFile = fileList.find((f) => f.uid === fileItem.uid);
+
         if (fileItem.originFileObj && !fileItem.preview) {
           fileItem.preview = await getBase64(fileItem.originFileObj as RcFile);
         }
-        return {
+
+        const result = {
           uid: fileItem.uid,
           name: fileItem.name,
-          preview: fileItem.preview,
-          url: fileItem.url,
+          preview: fileItem.preview || existingFile?.preview,
+          url: fileItem.url || existingFile?.url,
           originFileObj: fileItem.originFileObj,
-          is_thumbnail: fileItem.is_thumbnail || false,
-          sort_order: fileItem.sort_order || 0,
-          id: fileItem.id,
-          key: fileItem.key,
+          is_thumbnail:
+            fileItem.is_thumbnail ?? existingFile?.is_thumbnail ?? false,
+          sort_order: fileItem.sort_order ?? existingFile?.sort_order ?? 0,
+          id: fileItem.id ?? existingFile?.id,
+          key: fileItem.key ?? existingFile?.key,
         };
+
+        return result;
       })
     );
+
     setFileList(updated);
     setValue("images", updated);
   };
@@ -77,6 +86,7 @@ export default function ImagesUploader({
   return (
     <>
       <Dragger
+        disabled={disabled}
         multiple
         accept="image/*"
         listType="picture-card"
@@ -98,40 +108,42 @@ export default function ImagesUploader({
         <p className="ant-upload-text">Kéo thả hoặc click để tải ảnh</p>
       </Dragger>
 
-      <div className="mt-4 grid grid-cols-1 gap-2">
-        {fileList.map((file) => (
-          <div
-            key={file.uid}
-            className="flex items-center gap-2 border p-2 rounded"
-          >
-            <Image
-              width={80}
-              src={file.url || file.preview}
-              alt={file.name}
-              preview={{ visible: false }}
-              className="rounded"
-            />
-            <div className="flex-1 flex items-center justify-between">
-              <div>
-                <Checkbox
-                  checked={file.is_thumbnail}
-                  onChange={() => toggleThumbnail(file)}
-                >
-                  Thumbnail
-                </Checkbox>
-              </div>
-              <div className="flex items-center gap-1">
-                <span>Sort:</span>
-                <InputNumber
-                  min={1}
-                  value={file.sort_order}
-                  onChange={(val) => updateSortOrder(file, val || 0)}
-                />
+      {!disabled && (
+        <div className="mt-4 grid grid-cols-1 gap-2">
+          {fileList.map((file) => (
+            <div
+              key={file.uid}
+              className="flex items-center gap-2 border p-2 rounded"
+            >
+              <Image
+                width={80}
+                src={file.url || file.preview}
+                alt={file.name}
+                preview={{ visible: false }}
+                className="rounded"
+              />
+              <div className="flex-1 flex items-center justify-between">
+                <div>
+                  <Checkbox
+                    checked={file.is_thumbnail}
+                    onChange={() => toggleThumbnail(file)}
+                  >
+                    Thumbnail
+                  </Checkbox>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span>Sort:</span>
+                  <InputNumber
+                    min={1}
+                    value={file.sort_order}
+                    onChange={(val) => updateSortOrder(file, val || 0)}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <Modal
         open={previewOpen}

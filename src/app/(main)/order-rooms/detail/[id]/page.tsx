@@ -12,7 +12,7 @@ export default function Page() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = Number(params.id);
-  const qrCodeUrl = searchParams.get("qr")?.toString();
+  const qrCodeUrl = searchParams.get("qr");
 
   const [order, setOrder] = useState<any>();
   const [loading, setLoading] = useState(true);

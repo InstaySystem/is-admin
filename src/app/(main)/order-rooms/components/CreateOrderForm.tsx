@@ -52,13 +52,12 @@ export default function CreateOrderForm() {
       });
 
       const orderId = res.data.data.id;
-      const qrCodeUrl = res.data.data.qr_code_url;
+      const qrCodeUrl = res.data.data.secret_code;
       setUrlQrCode(qrCodeUrl);
 
       message.success("Tạo đơn phòng thành công");
-
       window.location.href = `/order-rooms/detail/${orderId}?qr=${encodeURIComponent(
-        qrCodeUrl
+        typeof qrCodeUrl === "string" ? qrCodeUrl : res.data.data.secret_code
       )}`;
     } catch (err: any) {
       if (err === "Session expired. Please login again.") {

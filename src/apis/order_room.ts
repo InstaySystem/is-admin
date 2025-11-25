@@ -14,7 +14,7 @@ export const verifyOrderRoomAdmin = (secret_code: string) => {
 export const createOrderService = (payload: {
   service_id: number;
   quantity: number;
-  guest_note: number;
+  guest_note: string;
 }) => {
   return axiosRequest.post("/orders/services", payload);
 };

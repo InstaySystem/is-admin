@@ -24,3 +24,7 @@ export const updateServiceType = (
 export const deleteServiceType = (id: number) => {
   return axiosRequest.delete(`/admin/service-types/${id}`);
 };
+
+export const getServiceTypesBySlug = (slug: string) => {
+  return axiosRequest.get(`/service-types/${slug}/services`);
+};
