@@ -24,16 +24,24 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [messageApi, contextHolder] = message.useMessage(); // <-- thêm message API
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
     const sse = new EventSource(`${process.env.NEXT_PUBLIC_API_URL}/sse`, {
       withCredentials: true,
     });
 
-    console.log(sse);
     sse.onmessage = (event) => {
-      console.log("Received SSE:", event.data);
+      console.log("Default message:", event.data);
     };
+
+    sse.addEventListener("order_service", (event) => {
+      console.log("Order Service event:", event.data);
+      const data = JSON.parse(event.data);
+      setNotifications((prev) => [data, ...prev]);
+      messageApi.info(`Đơn mới: ${data.content}`, 10);
+    });
 
     sse.onerror = (err) => {
       console.error("SSE error:", err);
@@ -46,19 +54,22 @@ export default function MainLayout({ children }: MainLayoutProps) {
     return () => {
       sse.close();
     };
-  }, []);
+  }, [messageApi]);
 
   return (
     <div
       className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased flex h-screen`}
     >
+      {contextHolder}
       <Sidebar
         isOpen={isSidebarOpen}
         toggle={() => setIsSidebarOpen(!isSidebarOpen)}
       />
-
       <div className="flex-1 flex flex-col bg-gray-50 overflow-auto">
-        <Header />
+        <Header
+          notifications={notifications}
+          setNotifications={setNotifications}
+        />
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>

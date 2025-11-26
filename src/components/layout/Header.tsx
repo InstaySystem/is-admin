@@ -1,15 +1,36 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Avatar, Dropdown, Button, message } from "antd";
-import { LogoutOutlined, UserOutlined, DownOutlined } from "@ant-design/icons";
+import { message, Avatar, Dropdown, Button, Badge, List } from "antd";
+import {
+  LogoutOutlined,
+  UserOutlined,
+  DownOutlined,
+  BellOutlined,
+} from "@ant-design/icons";
 import { logOut } from "@/apis/auth";
 import { useAppStore } from "@/stores/useAppStore";
+import { getOrderServiceByCode } from "@/apis/order_room";
 
-export default function Header() {
+interface HeaderProps {
+  notifications: any[];
+  setNotifications: React.Dispatch<React.SetStateAction<any[]>>;
+}
+
+export default function Header({
+  notifications,
+  setNotifications,
+}: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAppStore((state) => state.user);
+  const [unreadCount, setUnreadCount] = useState(notifications.length);
+
+  useEffect(() => {
+    setUnreadCount(notifications.length);
+  }, [notifications]);
 
   const handleLogout = async () => {
     try {
@@ -24,26 +45,45 @@ export default function Header() {
 
   const handleGoProfile = () => router.push("/profile");
 
-  // 🔥 NEW — menu dùng items thay vì overlay
-  const menuItems = [
+  const handleClickNotification = async (item: any) => {
+    try {
+      const res = await getOrderServiceByCode(item.content_id);
+      console.log("Order info:", res.data);
+      setUnreadCount((prev) => Math.max(prev - 1, 0));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const notificationMenu = (
+    <List
+      className="w-80 max-h-96 overflow-auto"
+      dataSource={notifications}
+      renderItem={(item) => (
+        <List.Item
+          className="cursor-pointer hover:bg-gray-100"
+          onClick={() => handleClickNotification(item)}
+        >
+          {item.content}
+        </List.Item>
+      )}
+    />
+  );
+
+  const userMenuItems = [
     {
       key: "profile",
-      label: <span className="font-medium text-gray-700">Hồ sơ cá nhân</span>,
-      icon: <UserOutlined className="text-base" />,
+      label: "Hồ sơ cá nhân",
+      icon: <UserOutlined />,
       onClick: handleGoProfile,
-      className: "!mx-2 !rounded-lg !py-3 hover:!bg-blue-50 transition-all",
     },
-    {
-      type: "divider" as const,
-    },
+    { type: "divider" as const },
     {
       key: "logout",
-      label: <span className="font-medium text-red-600">Đăng xuất</span>,
-      icon: <LogoutOutlined className="text-base text-red-600" />,
+      label: "Đăng xuất",
+      icon: <LogoutOutlined />,
       danger: true,
       onClick: handleLogout,
-      className: "!mx-2 !rounded-lg !py-3 hover:!bg-red-50 transition-all",
-      type: "item" as const,
     },
   ];
 
@@ -68,37 +108,35 @@ export default function Header() {
           </h1>
         </div>
 
-        {user && (
+        <div className="flex items-center gap-4">
+          {/* Notification Bell */}
           <Dropdown
-            menu={{ items: menuItems }}
+            overlay={notificationMenu}
             trigger={["click"]}
             placement="bottomRight"
           >
-            <Button
-              type="text"
-              className="flex! items-center gap-3 px-4! py-2! !h-auto! hover:bg-gray-50! rounded-xl! transition-all duration-200 group border border-transparent hover:border-gray-200!"
-            >
-              <Avatar
-                className="bg-linear-to-br! !from-blue-500! to-blue-600! text-white! shadow-md! group-hover:shadow-lg! transition-shadow"
-                size={44}
-              >
-                <span className="text-base font-semibold">
-                  {user.first_name?.charAt(0).toUpperCase()}
-                  {user.last_name?.charAt(0).toUpperCase()}
-                </span>
-              </Avatar>
-              <div className="flex flex-col items-start">
-                <span className="font-semibold text-gray-800 text-sm">
-                  {user.first_name} {user.last_name}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {user.role === "admin" ? "Quản trị viên" : "Nhân viên"}
-                </span>
-              </div>
-              <DownOutlined className="text-gray-400 text-xs group-hover:text-gray-600 transition-colors" />
-            </Button>
+            <Badge count={unreadCount} size="small" offset={[-2, 2]}>
+              <BellOutlined className="text-xl text-gray-600 cursor-pointer hover:text-gray-800 transition-colors" />
+            </Badge>
           </Dropdown>
-        )}
+
+          {/* User Dropdown */}
+          {user && (
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              trigger={["click"]}
+              placement="bottomRight"
+            >
+              <Button type="text" className="flex items-center gap-3">
+                <Avatar size={44} className="bg-blue-500 text-white">
+                  {user.first_name?.charAt(0)}
+                  {user.last_name?.charAt(0)}
+                </Avatar>
+                <DownOutlined />
+              </Button>
+            </Dropdown>
+          )}
+        </div>
       </div>
     </header>
   );

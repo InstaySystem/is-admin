@@ -22,3 +22,7 @@ export const createOrderService = (payload: {
 export const getOrderRoomById = (id: number) => {
   return axiosRequest.get(`/admin/orders/rooms/${id}`);
 };
+
+export const getOrderServiceByCode = (code: number) => {
+  return axiosRequest.get(`/orders/services/${code}`);
+};
