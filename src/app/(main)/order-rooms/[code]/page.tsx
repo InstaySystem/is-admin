@@ -21,7 +21,7 @@ export default function VerifyOrderRoomPage() {
         const res = await verifyOrderRoomAdmin(code);
         console.log(res);
         message.success("Xác nhận đơn phòng thành công!");
-        router.replace("/guest");
+        router.replace("/guest/guest-services");
       } catch (err: any) {
         message.error(
           err?.response?.data?.message || "Xác nhận đơn phòng thất bại!"

@@ -1,20 +1,28 @@
-"use client";
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
-import { Table, Button, message, Modal, Tag } from "antd";
-import { getServiceTypesForGuest, getServicesBySlug } from "@/apis/services";
+"use client";
+
+import { useEffect, useState } from "react";
+import { Button, message, Modal, Tag, Card } from "antd";
+import { getServiceTypesForGuest } from "@/apis/services";
 import { Service, ServiceType } from "@/types/service";
 import { getServiceTypesBySlug } from "@/apis/service_types";
 import { useRouter } from "next/navigation";
+import { getRequestTypesForGuest } from "@/apis/request_type";
+import CreateRequestModal from "./components/CreateRequestModal";
 
 export default function GuestServicePage() {
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [requestTypes, setRequestTypes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [services, setServices] = useState<Service[]>([]);
   const [servicesLoading, setServicesLoading] = useState(false);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [requestType, setRequestType] = useState<any>(null);
 
   const router = useRouter();
 
@@ -26,19 +34,20 @@ export default function GuestServicePage() {
     setLoading(true);
     try {
       const res = await getServiceTypesForGuest();
+      const requestTypesRes = await getRequestTypesForGuest();
       setServiceTypes(res.data.data.service_types || []);
+      setRequestTypes(requestTypesRes.data.data.request_types || []);
     } catch (error: any) {
-      console.error(error);
       message.error(
-        error?.response?.data?.message || "Không thể tải danh sách loại dịch vụ"
+        error?.response?.data?.message || "Không thể tải danh sách dịch vụ"
       );
     }
     setLoading(false);
   };
 
   const openServiceModal = async (record: ServiceType) => {
-    setServices([]);
     setModalTitle(record.name);
+    setServices([]);
     setIsModalOpen(true);
     setServicesLoading(true);
 
@@ -46,83 +55,62 @@ export default function GuestServicePage() {
       const res = await getServiceTypesBySlug(record.slug);
       setServices(res.data.data.service_type.services || []);
     } catch (error: any) {
-      console.error(error);
-      message.error(error?.response?.data?.message || "Không thể tải dịch vụ");
+      message.error(
+        error?.response?.data?.message || "Không thể tải danh sách dịch vụ"
+      );
     }
+
     setServicesLoading(false);
+  };
+
+  const handleRequestModalOpen = (item: any) => {
+    setRequestType(item);
+    setIsRequestModalOpen(true);
   };
 
   useEffect(() => {
     fetchServiceTypes();
   }, []);
 
-  const serviceTypeColumns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Tên loại dịch vụ",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Thao tác",
-      key: "action",
-      render: (_: any, record: ServiceType) => (
-        <Button type="primary" onClick={() => openServiceModal(record)}>
-          Xem dịch vụ
-        </Button>
-      ),
-    },
-  ];
-
-  const serviceColumns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Tên dịch vụ",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Giá",
-      dataIndex: "price",
-      key: "price",
-      render: (_: any, record: Service) => (
-        <Tag color="blue" key={record.id}>
-          {record.price.toLocaleString()} VND
-        </Tag>
-      ),
-    },
-    {
-      title: "Thao tác",
-      key: "action",
-      render: (_: any, record: ServiceType) => (
-        <Button type="primary" onClick={() => viewServiceType(record)}>
-          Xem chi tiết
-        </Button>
-      ),
-    },
-  ];
-
   return (
-    <div className="p-4 min-h-screen bg-gray-50">
-      <header className="text-center text-xl font-bold mb-4">
-        Instay - Dịch vụ tiện lợi
+    <div className="p-4 min-h-screen bg-gray-50 space-y-6">
+      <header className="text-center text-xl font-bold">
+        Instay - Dịch vụ
       </header>
 
-      <Table
-        columns={serviceTypeColumns}
-        dataSource={serviceTypes}
-        rowKey="id"
-        loading={loading}
-        pagination={false}
-      />
+      <section>
+        <h2 className="text-lg font-semibold mb-3 text-black">Loại Dịch Vụ</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {serviceTypes.map((item) => (
+            <Card
+              key={item.id}
+              loading={loading}
+              onClick={() => openServiceModal(item)}
+              className="shadow-sm hover:shadow-md transition cursor-pointer"
+              title={<span className="font-semibold">{item.name}</span>}
+            ></Card>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold mb-3 text-black">Loại Yêu Cầu</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {requestTypes.map((item) => (
+            <Card
+              key={item.id}
+              loading={loading}
+              className="shadow-sm hover:shadow-md transition"
+              title={<span className="font-semibold">{item.name}</span>}
+              onClick={handleRequestModalOpen.bind(null, item)}
+            >
+              <p className="text-gray-500 mb-3">{item.description}</p>
+            </Card>
+          ))}
+        </div>
+      </section>
 
       <Modal
         open={isModalOpen}
@@ -131,14 +119,36 @@ export default function GuestServicePage() {
         footer={null}
         width={700}
       >
-        <Table
-          columns={serviceColumns}
-          dataSource={services}
-          rowKey="id"
-          loading={servicesLoading}
-          pagination={false}
-        />
+        {servicesLoading ? (
+          <p>Đang tải...</p>
+        ) : (
+          <div className="space-y-3">
+            {services.map((svc) => (
+              <Card key={svc.id} className="border rounded-md">
+                <div className="flex justify-between">
+                  <div>
+                    <p className="font-semibold">{svc.name}</p>
+                    <Tag color="blue" className="mt-2">
+                      {svc.price.toLocaleString()} VND
+                    </Tag>
+                  </div>
+
+                  <Button type="primary" onClick={() => viewServiceType(svc)}>
+                    Xem chi tiết
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </Modal>
+
+      <CreateRequestModal
+        open={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+        requestTypeId={requestType ? requestType.id : 0}
+        request={requestType ? requestType.name : ""}
+      />
     </div>
   );
 }

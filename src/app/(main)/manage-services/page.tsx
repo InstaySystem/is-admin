@@ -116,7 +116,7 @@ export default function ManageService() {
         record.service_type ? record.service_type.name : "—",
     },
     {
-      title: "Price",
+      title: "Giá tiền",
       dataIndex: "price",
       key: "price",
       render: (price: number) =>

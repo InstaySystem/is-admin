@@ -24,8 +24,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [messageApi, contextHolder] = message.useMessage(); // <-- thêm message API
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     const sse = new EventSource(`${process.env.NEXT_PUBLIC_API_URL}/sse`, {
@@ -37,10 +36,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
 
     sse.addEventListener("order_service", (event) => {
-      console.log("Order Service event:", event.data);
       const data = JSON.parse(event.data);
-      setNotifications((prev) => [data, ...prev]);
       messageApi.info(`Đơn mới: ${data.content}`, 10);
+    });
+
+    sse.addEventListener("request", (event) => {
+      const data = JSON.parse(event.data);
+      messageApi.info(`Yêu cầu mới: ${data.content}`, 10);
     });
 
     sse.onerror = (err) => {
@@ -66,10 +68,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         toggle={() => setIsSidebarOpen(!isSidebarOpen)}
       />
       <div className="flex-1 flex flex-col bg-gray-50 overflow-auto">
-        <Header
-          notifications={notifications}
-          setNotifications={setNotifications}
-        />
+        <Header />
         <main className="flex-1 p-6">{children}</main>
       </div>
     </div>

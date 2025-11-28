@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { FaUser, FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
 import { useAppStore } from "@/stores/useAppStore";
+import { setCookie } from "@/utils/cookies";
 
 const schema = yup.object().shape({
   username: yup.string().required("Vui lòng nhập username"),
@@ -41,8 +42,8 @@ export default function LoginForm() {
   const onSubmit = async (data: IFormInput) => {
     try {
       const res = await login(data);
-      console.log(res.data.data.user);
       setUser(res.data.data.user);
+      setCookie("role", res.data.data.user.role);
       router.push("/dashboard");
     } catch (error) {
       console.error(error);

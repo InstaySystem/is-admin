@@ -25,3 +25,7 @@ export const updateRequestType = async (
 export const deleteRequestType = async (requestTypeId: number) => {
   return await axiosRequest.delete(`/admin/request-types/${requestTypeId}`);
 };
+
+export const getRequestTypesForGuest = async () => {
+  return await axiosRequest.get("/request-types");
+};

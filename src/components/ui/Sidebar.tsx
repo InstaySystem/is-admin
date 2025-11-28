@@ -5,19 +5,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   FaChartLine,
-  FaBell,
   FaUsers,
   FaCog,
-  FaCommentDots,
-  FaBullhorn,
   FaUser,
   FaRestroom,
   FaRegQuestionCircle,
   FaBookMedical,
-  FaJediOrder,
+  FaFirstOrderAlt,
 } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
 import Image from "next/image";
+
+import { useAppStore } from "@/stores/useAppStore";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -26,19 +25,40 @@ interface SidebarProps {
 
 const menuItems = [
   { name: "Dashboard", icon: <FaChartLine />, path: "/dashboard" },
-  { name: "Guest Requests", icon: <FaBell />, path: "/guest-requests" },
   { name: "Booking", icon: <FaBookMedical />, path: "/manage-booking" },
-  { name: "Order Rooms", icon: <FaJediOrder />, path: "/order-rooms/create" },
   { name: "Rooms", icon: <FaRestroom />, path: "/manage-rooms" },
   { name: "Services", icon: <FaCog />, path: "/manage-services" },
-  { name: "Request", icon: <FaRegQuestionCircle />, path: "/manage-requests" },
-  { name: "Staff", icon: <FaUsers />, path: "/staff" },
-  { name: "Department", icon: <FaUsers />, path: "/department" },
+  {
+    name: "Order Services",
+    icon: <FaFirstOrderAlt />,
+    path: "/order-services",
+  },
+
+  {
+    name: "Request",
+    icon: <FaRegQuestionCircle />,
+    path: "/manage-requests",
+  },
+
+  { name: "Staff", icon: <FaUsers />, path: "/staff", role: "admin-only" },
+  {
+    name: "Department",
+    icon: <FaUsers />,
+    path: "/department",
+    role: "admin-only",
+  },
+
   { name: "Profile", icon: <FaUser />, path: "/profile" },
 ];
 
 export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   const pathname = usePathname();
+  const role = useAppStore((state) => state._role);
+
+  const filteredMenu = menuItems.filter((item) => {
+    if (role !== "admin" && item.role === "admin-only") return false;
+    return true;
+  });
 
   return (
     <motion.div
@@ -77,7 +97,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       </div>
 
       <nav className="flex-1 mt-4">
-        {menuItems.map((item) => {
+        {filteredMenu.map((item) => {
           const isActive = pathname === item.path;
           return (
             <Link href={item.path} key={item.name}>
@@ -90,13 +110,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 }`}
               >
                 <span className="text-lg">{item.icon}</span>
+
                 <AnimatePresence>
                   {isOpen && (
                     <motion.span
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="whitespace-nowrap"
                     >
                       {item.name}
                     </motion.span>

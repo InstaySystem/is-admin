@@ -2,29 +2,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { message, Avatar, Dropdown, Button, Badge, List } from "antd";
-import {
-  LogoutOutlined,
-  UserOutlined,
-  DownOutlined,
-  BellOutlined,
-} from "@ant-design/icons";
+import { UserOutlined, DownOutlined, BellOutlined } from "@ant-design/icons";
 
-import { logOut } from "@/apis/auth";
-import { getOrderServiceById } from "@/apis/order_service";
-import { useAppStore } from "@/stores/useAppStore";
-import { removeCookie } from "@/utils/cookies";
 import {
   getNotificationsForAdmin,
   countUnreadNotifications,
+  countUnreadNotificationsForGuest,
+  getNotificationsForGuest,
 } from "@/apis/notification";
 import { getRequestById } from "@/apis/request";
 
-export default function Header() {
-  const pathname = usePathname();
+export default function HeaderGuest() {
   const router = useRouter();
-  const user = useAppStore((state) => state.user);
 
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -32,7 +23,7 @@ export default function Header() {
   useEffect(() => {
     const fetchUnreadCount = async () => {
       try {
-        const res = await countUnreadNotifications();
+        const res = await countUnreadNotificationsForGuest();
         setUnreadCount(res.data.data?.count || 0);
       } catch (err) {
         console.error("Failed to fetch unread count:", err);
@@ -71,20 +62,6 @@ export default function Header() {
     };
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      const res = await logOut();
-      useAppStore.getState().clearUser();
-      removeCookie("role");
-      message.success(res.data.message || "Đăng xuất thành công");
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
-  const handleGoProfile = () => router.push("/profile");
-
   const handleClickNotification = async (item: any) => {
     try {
       const id = item.content_id;
@@ -111,16 +88,18 @@ export default function Header() {
 
   const handleOpenChange = async (open: boolean) => {
     if (open) {
+      // Mở dropdown => lấy notifications
       try {
-        const res = await getNotificationsForAdmin();
+        const res = await getNotificationsForGuest();
         setNotifications(res.data.data.notifications || []);
+        setUnreadCount(0);
       } catch (err) {
         console.error(err);
         message.error("Không thể tải thông báo!");
       }
     } else {
       try {
-        const res = await countUnreadNotifications();
+        const res = await countUnreadNotificationsForGuest();
         setUnreadCount(res.data.data?.count || 0);
       } catch (err) {
         console.error(err);
@@ -131,18 +110,10 @@ export default function Header() {
   const userMenuItems = [
     {
       key: "profile",
-      label: "Hồ sơ cá nhân",
+      label: "Đây là Guest",
       icon: <UserOutlined />,
-      onClick: handleGoProfile,
     },
     { type: "divider" as const },
-    {
-      key: "logout",
-      label: "Đăng xuất",
-      icon: <LogoutOutlined />,
-      danger: true,
-      onClick: handleLogout,
-    },
   ];
 
   const notificationMenu = (
@@ -184,7 +155,7 @@ export default function Header() {
         <div className="flex items-center gap-3">
           <div className="w-1.5 h-8 bg-linear-to-b from-blue-500 to-blue-600 rounded-full shadow" />
           <h1 className="text-2xl text-gray-900 font-semibold tracking-tight">
-            Trang quản lý
+            GUEST PAGE
           </h1>
         </div>
 
@@ -200,24 +171,21 @@ export default function Header() {
             </Badge>
           </Dropdown>
 
-          {user && (
-            <Dropdown
-              menu={{ items: userMenuItems }}
-              trigger={["click"]}
-              placement="bottomRight"
+          <Dropdown
+            menu={{ items: userMenuItems }}
+            trigger={["click"]}
+            placement="bottomRight"
+          >
+            <Button
+              type="text"
+              className="flex items-center gap-3 hover:bg-gray-100 px-2 py-1 rounded-lg transition"
             >
-              <Button
-                type="text"
-                className="flex items-center gap-3 hover:bg-gray-100 px-2 py-1 rounded-lg transition"
-              >
-                <Avatar size={42} className="bg-blue-600 text-white shadow">
-                  {user.first_name?.charAt(0)}
-                  {user.last_name?.charAt(0)}
-                </Avatar>
-                <DownOutlined className="text-gray-600" />
-              </Button>
-            </Dropdown>
-          )}
+              <Avatar size={42} className="bg-blue-600 text-white shadow">
+                GU
+              </Avatar>
+              <DownOutlined className="text-gray-600" />
+            </Button>
+          </Dropdown>
         </div>
       </div>
     </header>

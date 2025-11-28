@@ -2,11 +2,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Input, InputNumber, Select, Form, Button, Modal, message } from "antd";
+import { Input, InputNumber, Select, Form, Button, Modal } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import CustomAlert from "@/components/ui/CustomAlert";
 import ImagesUploader from "@/app/(main)/manage-services/components/ImagesUploader";
-import { getServiceTypes, getServicesBySlug } from "@/apis/services";
+import { getServicesBySlug } from "@/apis/services";
 import { generateViewPresignedUrls } from "@/apis/file";
 import { ServiceType } from "@/types/service";
 import { createOrderService } from "@/apis/order_room";
@@ -43,6 +43,10 @@ export default function DetailGuestServicePage() {
   const serviceSlug = params.id;
   const router = useRouter();
 
+  const showAlert = (type: typeof alert.type, message: string) => {
+    setAlert({ open: true, type, message });
+  };
+
   const { control, setValue, reset } = useForm<FormValues>({
     defaultValues: {
       name: "",
@@ -56,8 +60,6 @@ export default function DetailGuestServicePage() {
   const {
     control: orderControl,
     handleSubmit: handleOrderSubmit,
-    setValue: setOrderValue,
-    watch: watchOrder,
   } = useForm<OrderServiceFormValues>({
     defaultValues: { quantity: 1, guest_note: "" },
   });
@@ -110,23 +112,21 @@ export default function DetailGuestServicePage() {
     if (!originalData) return;
     setModalLoading(true);
     try {
-      await createOrderService({
+      const res = await createOrderService({
         service_id: originalData.id,
         quantity: data.quantity,
         guest_note: data.guest_note,
       });
-      message.success("Đặt dịch vụ thành công!");
+      showAlert("success", res.data.message || "Đặt dịch vụ thành công");
       setIsModalOpen(false);
-      router.push("/guest"); // redirect về guest page
+      router.push("/guest");
     } catch (err: any) {
       console.error(err);
-      message.error(err?.response?.data?.message || "Đặt dịch vụ thất bại");
+      showAlert("error", err.message);
     } finally {
       setModalLoading(false);
     }
   };
-
-  const nameValue = watchOrder("quantity"); // optional, nếu muốn watch
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8 mt-6">

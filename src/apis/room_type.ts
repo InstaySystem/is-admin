@@ -5,6 +5,10 @@ export const getRoomTypes = async () => {
   return await axiosRequest.get("/admin/room-types");
 };
 
+export const getRoomTypesFilter = async () => {
+  return await axiosRequest.get("/room-types");
+};
+
 export const createRoomType = async (data: CreateRoomTypeRequest) => {
   return await axiosRequest.post("/admin/room-types", data);
 };

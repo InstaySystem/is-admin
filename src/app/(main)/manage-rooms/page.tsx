@@ -6,7 +6,7 @@ import { Table, Space, Button, Input, Select } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { getFloors } from "@/apis/floor";
 import { getRooms, deleteRoom, createRoom, updateRoom } from "@/apis/room";
-import { getRoomTypes } from "@/apis/room_type";
+import { getRoomTypes, getRoomTypesFilter } from "@/apis/room_type";
 import { Room, Floor, RoomType } from "@/types/room";
 import CustomAlert from "@/components/ui/CustomAlert";
 import CommonModal from "@/components/modals/CommonModal";
@@ -58,7 +58,7 @@ export default function ManageRoom() {
 
   const fetchRoomTypes = useCallback(async () => {
     try {
-      const res = await getRoomTypes();
+      const res = await getRoomTypesFilter();
       setRoomTypes(res.data.data.room_types || []);
     } catch (err: any) {
       showAlert("error", err.message || "Lỗi tải danh sách loại phòng");

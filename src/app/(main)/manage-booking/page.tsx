@@ -2,14 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {
-  Table,
-  Space,
-  Button,
-  Input,
-  DatePicker,
-  Pagination,
-} from "antd";
+import { Table, Space, Button, Input, DatePicker, Pagination } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { getBookings } from "@/apis/booking";
 import { Booking } from "@/types/booking";
@@ -171,6 +164,14 @@ export default function ManageBooking() {
             }}
           />
         </div>
+
+        <Button
+          type="primary"
+          className="bg-[#608DBC]!"
+          onClick={() => router.push("/order-rooms/create")}
+        >
+          Tạo đơn đặt phòng
+        </Button>
       </div>
 
       <Table

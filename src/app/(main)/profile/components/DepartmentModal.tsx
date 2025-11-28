@@ -24,6 +24,7 @@ import {
   updateDepartment,
   deleteDepartment,
   getDepartments,
+  getDepartmentsFilter,
 } from "@/apis/department";
 
 interface DepartmentModalProps {
@@ -61,7 +62,7 @@ export default function DepartmentModal({
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
-        const res = await getDepartments();
+        const res = await getDepartmentsFilter();
         setAllDepartments(res.data.data.departments || []);
       } catch (error: any) {
         console.error("Không thể tải danh sách phòng ban:", error.message);

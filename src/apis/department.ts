@@ -5,6 +5,10 @@ export const getDepartments = async () => {
   return await axiosRequest.get("/admin/departments");
 };
 
+export const getDepartmentsFilter = async () => {
+  return await axiosRequest.get("/departments");
+};
+
 export const createDepartment = async (data: Partial<Department>) => {
   return await axiosRequest.post("/admin/departments", data);
 };
