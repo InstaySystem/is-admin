@@ -28,18 +28,11 @@ export default function Header() {
   const router = useRouter();
   const user = useAppStore((state) => state.user);
 
-  // Notification store
-  const {
-    notifications,
-    unreadCount,
-    setNotifications,
-    setUnreadCount,
-    removeNotification,
-  } = useNotificationStore();
+  const { notifications, unreadCount, setNotifications, setUnreadCount } =
+    useNotificationStore();
 
-  // Message store
   const { messages } = useMessageStore();
-  const unreadMessagesCount = messages.length; // badge số tin nhắn chưa đọc
+  const unreadMessagesCount = messages.length;
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -72,7 +65,6 @@ export default function Header() {
       } else if (item.type === "service") {
         router.push(`/order-services/${item.content_id}`);
       }
-      removeNotification(item.id);
     } catch (err) {
       console.error(err);
       antdMessage.error("Không tìm thấy thông báo!");
@@ -98,25 +90,29 @@ export default function Header() {
     }
   };
 
-  // Notification dropdown
   const notificationMenu = (
     <List
       className="w-80 max-h-96 overflow-auto bg-white rounded-md shadow-lg"
       dataSource={notifications}
       renderItem={(item) => (
         <List.Item
-          className={`cursor-pointer px-4 py-3 rounded-md transition-all ${
+          className={`cursor-pointer px-4! py-3 rounded-md transition-all ${
             item.staff_read === null
               ? "bg-gray-100 hover:bg-gray-200"
               : "bg-white hover:bg-gray-50"
           }`}
           onClick={() => handleClickNotification(item)}
         >
-          <div className="flex flex-col">
+          <div className="flex flex-col text-gray-900 font-medium">
             <div>{item.content}</div>
             <div className="text-xs text-gray-500 mt-1">
-              {new Date(item.created_at).toLocaleString()}
+              Thời gian: {new Date(item.created_at).toLocaleString()}
             </div>
+            {item.staff_read.read_at && (
+              <div className="text-xs text-green-600 mt-0.5">
+                Đã đọc: {new Date(item.staff_read.read_at).toLocaleString()}
+              </div>
+            )}
           </div>
         </List.Item>
       )}
@@ -128,12 +124,23 @@ export default function Header() {
       className="w-80 max-h-96 overflow-auto bg-white rounded-md shadow-lg"
       dataSource={messages}
       renderItem={(item: any) => (
-        <List.Item className="cursor-pointer px-4 py-3 rounded-md transition-all">
-          <div className="flex flex-col">
+        <List.Item
+          className={`cursor-pointer px-4! py-3 rounded-md transition-all ${
+            item.staff_read === null
+              ? "bg-gray-400 hover:bg-gray-200"
+              : "bg-white hover:bg-gray-50"
+          }`}
+        >
+          <div className="flex flex-col text-gray-900 font-medium">
             <div>{item.content}</div>
             <div className="text-xs text-gray-500 mt-1">
-              {new Date(item.created_at).toLocaleString()}
+              Thời gian: {new Date(item.created_at).toLocaleString()}
             </div>
+            {item.is_read && (
+              <div className="text-xs text-green-600 mt-0.5">
+                Đã đọc: {new Date(item.read_at).toLocaleString()}
+              </div>
+            )}
           </div>
         </List.Item>
       )}
@@ -163,7 +170,6 @@ export default function Header() {
         <h1 className="text-2xl font-semibold text-gray-900">Trang quản lý</h1>
 
         <div className="flex items-center gap-5">
-          {/* Chat icon với badge */}
           <Dropdown
             overlay={messageMenu}
             trigger={["click"]}
@@ -174,7 +180,6 @@ export default function Header() {
             </Badge>
           </Dropdown>
 
-          {/* Notification icon với badge */}
           <Dropdown
             overlay={notificationMenu}
             trigger={["click"]}

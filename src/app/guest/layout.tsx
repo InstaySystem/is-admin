@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { FileTextOutlined, AppstoreOutlined } from "@ant-design/icons";
 import HeaderGuest from "@/components/layout/HeaderGuest";
 import { FaSnapchat } from "react-icons/fa";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 
 export default function GuestLayout({
   children,
@@ -16,6 +17,8 @@ export default function GuestLayout({
   const pathname = usePathname();
   const router = useRouter();
 
+  const addNotification = useNotificationStore((s) => s.addNotification);
+
   useEffect(() => {
     const sse = new EventSource(`${process.env.NEXT_PUBLIC_API_URL}/sse`, {
       withCredentials: true,
@@ -23,12 +26,14 @@ export default function GuestLayout({
 
     sse.addEventListener("order_service", (event) => {
       const data = JSON.parse(event.data);
-      messageApi.info(`Có thông báo mới: ${data.content}`, 10);
+      messageApi.info(`Đơn mới: ${data.content}`, 10);
+      addNotification(data);
     });
 
     sse.addEventListener("request", (event) => {
       const data = JSON.parse(event.data);
       messageApi.info(`Yêu cầu mới: ${data.content}`, 10);
+      addNotification(data);
     });
 
     sse.onerror = (err) => {
@@ -37,7 +42,7 @@ export default function GuestLayout({
     };
 
     return () => sse.close();
-  }, []);
+  }, [messageApi, addNotification]);
 
   const navItems = [
     {
