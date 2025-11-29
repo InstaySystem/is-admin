@@ -5,6 +5,7 @@ import { message } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import { FileTextOutlined, AppstoreOutlined } from "@ant-design/icons";
 import HeaderGuest from "@/components/layout/HeaderGuest";
+import { FaSnapchat } from "react-icons/fa";
 
 export default function GuestLayout({
   children,
@@ -53,6 +54,11 @@ export default function GuestLayout({
       key: "/guest/guest-services",
       label: "Services",
       icon: <AppstoreOutlined className="text-xl" />,
+    },
+    {
+      key: "/guest/chat",
+      label: "Chat",
+      icon: <FaSnapchat className="text-xl" />,
     },
   ];
 

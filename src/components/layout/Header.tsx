@@ -3,13 +3,16 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, Dropdown, Button, Badge, List, message } from "antd";
 import {
-  LogoutOutlined,
-  UserOutlined,
-  DownOutlined,
-  BellOutlined,
-} from "@ant-design/icons";
+  Avatar,
+  Dropdown,
+  Button,
+  Badge,
+  List,
+  message as antdMessage,
+} from "antd";
+import { LogoutOutlined, DownOutlined, UserOutlined } from "@ant-design/icons";
+import { IoNotificationsOutline, IoChatbubbleOutline } from "react-icons/io5";
 
 import { logOut } from "@/apis/auth";
 import { useAppStore } from "@/stores/useAppStore";
@@ -19,19 +22,24 @@ import {
   countUnreadNotifications,
 } from "@/apis/notification";
 import { useNotificationStore } from "@/stores/useNotificationStore";
+import { useMessageStore } from "@/stores/useMessageStore";
 
 export default function Header() {
   const router = useRouter();
   const user = useAppStore((state) => state.user);
 
+  // Notification store
   const {
     notifications,
     unreadCount,
-    addNotification,
     setNotifications,
     setUnreadCount,
     removeNotification,
   } = useNotificationStore();
+
+  // Message store
+  const { messages } = useMessageStore();
+  const unreadMessagesCount = messages.length; // badge số tin nhắn chưa đọc
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -50,25 +58,24 @@ export default function Header() {
       const res = await logOut();
       useAppStore.getState().clearUser();
       removeCookie("role");
-      message.success(res.data.message || "Đăng xuất thành công");
+      antdMessage.success(res.data.message || "Đăng xuất thành công");
       router.push("/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
-  const handleClickNotification = async (item: any) => {
+  const handleClickNotification = (item: any) => {
     try {
       if (item.type === "request") {
         router.push(`/manage-requests/${item.content_id}`);
       } else if (item.type === "service") {
         router.push(`/order-services/${item.content_id}`);
       }
-
       removeNotification(item.id);
     } catch (err) {
       console.error(err);
-      message.error("Không tìm thấy thông báo!");
+      antdMessage.error("Không tìm thấy thông báo!");
     }
   };
 
@@ -79,7 +86,7 @@ export default function Header() {
         setNotifications(res.data.data.notifications || []);
       } catch (err) {
         console.error(err);
-        message.error("Không thể tải thông báo!");
+        antdMessage.error("Không thể tải thông báo!");
       }
     } else {
       try {
@@ -91,6 +98,7 @@ export default function Header() {
     }
   };
 
+  // Notification dropdown
   const notificationMenu = (
     <List
       className="w-80 max-h-96 overflow-auto bg-white rounded-md shadow-lg"
@@ -104,6 +112,23 @@ export default function Header() {
           }`}
           onClick={() => handleClickNotification(item)}
         >
+          <div className="flex flex-col">
+            <div>{item.content}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {new Date(item.created_at).toLocaleString()}
+            </div>
+          </div>
+        </List.Item>
+      )}
+    />
+  );
+
+  const messageMenu = (
+    <List
+      className="w-80 max-h-96 overflow-auto bg-white rounded-md shadow-lg"
+      dataSource={messages}
+      renderItem={(item: any) => (
+        <List.Item className="cursor-pointer px-4 py-3 rounded-md transition-all">
           <div className="flex flex-col">
             <div>{item.content}</div>
             <div className="text-xs text-gray-500 mt-1">
@@ -138,6 +163,18 @@ export default function Header() {
         <h1 className="text-2xl font-semibold text-gray-900">Trang quản lý</h1>
 
         <div className="flex items-center gap-5">
+          {/* Chat icon với badge */}
+          <Dropdown
+            overlay={messageMenu}
+            trigger={["click"]}
+            placement="bottomRight"
+          >
+            <Badge count={unreadMessagesCount} size="small">
+              <IoChatbubbleOutline className="text-2xl text-black cursor-pointer hover:text-blue-600" />
+            </Badge>
+          </Dropdown>
+
+          {/* Notification icon với badge */}
           <Dropdown
             overlay={notificationMenu}
             trigger={["click"]}
@@ -145,7 +182,7 @@ export default function Header() {
             onOpenChange={handleOpenChange}
           >
             <Badge count={unreadCount} size="small">
-              <BellOutlined className="text-2xl cursor-pointer text-gray-600 hover:text-blue-600" />
+              <IoNotificationsOutline className="text-2xl cursor-pointer text-gray-600 hover:text-blue-600" />
             </Badge>
           </Dropdown>
 
