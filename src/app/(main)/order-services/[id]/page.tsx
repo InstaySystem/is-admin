@@ -61,7 +61,7 @@ export default function OrderServiceDetailPage() {
     pending: "gold",
     accepted: "green",
     rejected: "red",
-    canceled: "gray",
+    cancelled: "gray",
   }[status as string];
 
   const handleConfirm = async () => {

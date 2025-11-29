@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { message, Avatar, Dropdown, Button, Badge, List } from "antd";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Avatar, Dropdown, Button, Badge, List, message } from "antd";
 import {
   LogoutOutlined,
   UserOutlined,
@@ -12,64 +12,38 @@ import {
 } from "@ant-design/icons";
 
 import { logOut } from "@/apis/auth";
-import { getOrderServiceById } from "@/apis/order_service";
 import { useAppStore } from "@/stores/useAppStore";
 import { removeCookie } from "@/utils/cookies";
 import {
   getNotificationsForAdmin,
   countUnreadNotifications,
 } from "@/apis/notification";
-import { getRequestById } from "@/apis/request";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 
 export default function Header() {
-  const pathname = usePathname();
   const router = useRouter();
   const user = useAppStore((state) => state.user);
 
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const {
+    notifications,
+    unreadCount,
+    addNotification,
+    setNotifications,
+    setUnreadCount,
+    removeNotification,
+  } = useNotificationStore();
 
   useEffect(() => {
-    const fetchUnreadCount = async () => {
+    const fetchUnread = async () => {
       try {
         const res = await countUnreadNotifications();
         setUnreadCount(res.data.data?.count || 0);
       } catch (err) {
-        console.error("Failed to fetch unread count:", err);
+        console.error("Fetch unread failed", err);
       }
     };
-    fetchUnreadCount();
-  }, []);
-
-  useEffect(() => {
-    const sse = new EventSource(`${process.env.NEXT_PUBLIC_API_URL}/sse`, {
-      withCredentials: true,
-    });
-
-    sse.addEventListener("order_service", (event) => {
-      const data = JSON.parse(event.data);
-      message.info(`Đơn mới: ${data.content}`, 10);
-      setNotifications((prev) => [data, ...prev]);
-      setUnreadCount((c) => c + 1);
-    });
-
-    sse.addEventListener("request", (event) => {
-      const data = JSON.parse(event.data);
-      message.info(`Yêu cầu mới: ${data.content}`, 10);
-      setNotifications((prev) => [data, ...prev]);
-      setUnreadCount((c) => c + 1);
-    });
-
-    sse.onerror = (err) => {
-      console.error("SSE error:", err);
-      sse.close();
-      setTimeout(() => {}, 3000);
-    };
-
-    return () => {
-      sse.close();
-    };
-  }, []);
+    fetchUnread();
+  }, [setUnreadCount]);
 
   const handleLogout = async () => {
     try {
@@ -83,26 +57,15 @@ export default function Header() {
     }
   };
 
-  const handleGoProfile = () => router.push("/profile");
-
   const handleClickNotification = async (item: any) => {
     try {
-      const id = item.content_id;
-      if (!id) return;
-
       if (item.type === "request") {
-        await getRequestById(id);
-        router.push(`/manage-requests/${id}`);
+        router.push(`/manage-requests/${item.content_id}`);
       } else if (item.type === "service") {
-        router.push(`/order-services/${id}`);
-      } else {
-        message.info("Loại thông báo không xác định");
-        return;
+        router.push(`/order-services/${item.content_id}`);
       }
 
-      // Xóa thông báo khỏi list và giảm count
-      setNotifications((prev) => prev.filter((n) => n.id !== item.id));
-      setUnreadCount((c) => Math.max(c - 1, 0));
+      removeNotification(item.id);
     } catch (err) {
       console.error(err);
       message.error("Không tìm thấy thông báo!");
@@ -128,14 +91,38 @@ export default function Header() {
     }
   };
 
+  const notificationMenu = (
+    <List
+      className="w-80 max-h-96 overflow-auto bg-white rounded-md shadow-lg"
+      dataSource={notifications}
+      renderItem={(item) => (
+        <List.Item
+          className={`cursor-pointer px-4 py-3 rounded-md transition-all ${
+            item.staff_read === null
+              ? "bg-gray-100 hover:bg-gray-200"
+              : "bg-white hover:bg-gray-50"
+          }`}
+          onClick={() => handleClickNotification(item)}
+        >
+          <div className="flex flex-col">
+            <div>{item.content}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {new Date(item.created_at).toLocaleString()}
+            </div>
+          </div>
+        </List.Item>
+      )}
+    />
+  );
+
   const userMenuItems = [
     {
       key: "profile",
       label: "Hồ sơ cá nhân",
       icon: <UserOutlined />,
-      onClick: handleGoProfile,
+      onClick: () => router.push("/profile"),
     },
-    { type: "divider" as const },
+    { type: "divider" },
     {
       key: "logout",
       label: "Đăng xuất",
@@ -145,48 +132,10 @@ export default function Header() {
     },
   ];
 
-  const notificationMenu = (
-    <List
-      className="w-80 max-h-96 overflow-auto bg-white rounded-md shadow-lg"
-      dataSource={notifications}
-      renderItem={(item) => (
-        <List.Item
-          className={`cursor-pointer px-4! py-3 rounded-md transition-all ${
-            item.staff_read === null
-              ? "bg-gray-100 hover:bg-gray-200"
-              : "bg-white hover:bg-gray-50"
-          }`}
-          onClick={() => handleClickNotification(item)}
-        >
-          <div className="flex flex-col text-gray-900 font-medium">
-            <div>{item.content}</div>
-            <div className="text-xs text-gray-500 mt-1">
-              <span>
-                Thời gian: {new Date(item.created_at).toLocaleString()}
-              </span>
-            </div>
-            {item.staff_read?.read_at && (
-              <div className="text-xs text-green-600 mt-0.5">
-                <span>
-                  Đã đọc: {new Date(item.staff_read.read_at).toLocaleString()}
-                </span>
-              </div>
-            )}
-          </div>
-        </List.Item>
-      )}
-    />
-  );
-
   return (
-    <header className="w-full bg-white shadow-md border-b border-gray-100 sticky top-0 z-40 backdrop-blur-md">
+    <header className="w-full bg-white shadow-md border-b sticky top-0 z-40">
       <div className="flex items-center justify-between px-8 py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-1.5 h-8 bg-linear-to-b from-blue-500 to-blue-600 rounded-full shadow" />
-          <h1 className="text-2xl text-gray-900 font-semibold tracking-tight">
-            Trang quản lý
-          </h1>
-        </div>
+        <h1 className="text-2xl font-semibold text-gray-900">Trang quản lý</h1>
 
         <div className="flex items-center gap-5">
           <Dropdown
@@ -195,8 +144,8 @@ export default function Header() {
             placement="bottomRight"
             onOpenChange={handleOpenChange}
           >
-            <Badge count={unreadCount} size="small" offset={[-2, 2]}>
-              <BellOutlined className="text-2xl text-gray-600 cursor-pointer hover:text-blue-600 transition" />
+            <Badge count={unreadCount} size="small">
+              <BellOutlined className="text-2xl cursor-pointer text-gray-600 hover:text-blue-600" />
             </Badge>
           </Dropdown>
 
@@ -206,15 +155,12 @@ export default function Header() {
               trigger={["click"]}
               placement="bottomRight"
             >
-              <Button
-                type="text"
-                className="flex items-center gap-3 hover:bg-gray-100 px-2 py-1 rounded-lg transition"
-              >
-                <Avatar size={42} className="bg-blue-600 text-white shadow">
-                  {user.first_name?.charAt(0)}
-                  {user.last_name?.charAt(0)}
+              <Button type="text" className="flex items-center gap-3">
+                <Avatar size={42} className="bg-blue-600 text-white">
+                  {user.first_name?.[0]}
+                  {user.last_name?.[0]}
                 </Avatar>
-                <DownOutlined className="text-gray-600" />
+                <DownOutlined />
               </Button>
             </Dropdown>
           )}

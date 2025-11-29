@@ -9,7 +9,7 @@ export interface OrderService {
   serviceId: number;
   quantity: number;
   totalPrice: number;
-  status: "pending" | "accepted" | "rejected" | "canceled";
+  status: "pending" | "accepted" | "rejected" | "cancelled";
   createdAt: string;
   updatedAt: string;
   guestNote?: string;

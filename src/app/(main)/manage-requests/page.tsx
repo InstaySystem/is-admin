@@ -81,7 +81,7 @@ export default function ManageRequestPage() {
         const colorMap: any = {
           pending: "orange",
           accepted: "blue",
-          canceled: "red",
+          cancelled: "red",
           done: "green",
         };
         return (
@@ -168,7 +168,7 @@ export default function ManageRequestPage() {
             options={[
               { label: "Pending", value: "pending" },
               { label: "Accepted", value: "accepted" },
-              { label: "Canceled", value: "canceled" },
+              { label: "Cancelled", value: "cancelled" },
               { label: "Done", value: "done" },
             ]}
           />

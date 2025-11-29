@@ -88,7 +88,7 @@ export default function OrderServicesPage() {
           accepted: { color: "green", label: "Đã chấp nhận" },
           pending: { color: "gold", label: "Đang xử lý" },
           rejected: { color: "red", label: "Từ chối" },
-          canceled: { color: "gray", label: "Đã hủy" },
+          cancelled: { color: "gray", label: "Đã hủy" },
         };
 
         const item = mapTag[v] || { color: "default", label: v };

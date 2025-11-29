@@ -36,7 +36,7 @@ export default function GuestLayout({
     };
 
     return () => sse.close();
-  }, [messageApi]);
+  }, []);
 
   const navItems = [
     {

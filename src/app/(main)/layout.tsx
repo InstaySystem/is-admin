@@ -5,6 +5,7 @@ import Sidebar from "@/components/ui/Sidebar";
 import Header from "@/components/layout/Header";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import { message } from "antd";
+import { useNotificationStore } from "@/stores/useNotificationStore";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -26,37 +27,32 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [messageApi, contextHolder] = message.useMessage();
 
+  const addNotification = useNotificationStore((s) => s.addNotification);
+
   useEffect(() => {
     const sse = new EventSource(`${process.env.NEXT_PUBLIC_API_URL}/sse`, {
       withCredentials: true,
     });
 
-    sse.onmessage = (event) => {
-      console.log("Default message:", event.data);
-    };
-
     sse.addEventListener("order_service", (event) => {
       const data = JSON.parse(event.data);
       messageApi.info(`Đơn mới: ${data.content}`, 10);
+      addNotification(data);
     });
 
     sse.addEventListener("request", (event) => {
       const data = JSON.parse(event.data);
       messageApi.info(`Yêu cầu mới: ${data.content}`, 10);
+      addNotification(data);
     });
 
     sse.onerror = (err) => {
       console.error("SSE error:", err);
       sse.close();
-      setTimeout(() => {
-        setIsSidebarOpen((v) => v);
-      }, 3000);
     };
 
-    return () => {
-      sse.close();
-    };
-  }, [messageApi]);
+    return () => sse.close();
+  }, [messageApi, addNotification]);
 
   return (
     <div

@@ -26,7 +26,7 @@ export default function GuestServicePage() {
 
   const router = useRouter();
 
-  const viewServiceType = (record: ServiceType) => {
+  const viewServiceType = (record: any) => {
     router.push(`/guest/${record.slug}`);
   };
 

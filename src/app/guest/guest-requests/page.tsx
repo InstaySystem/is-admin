@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, Button, Popconfirm, message, Spin, Modal } from "antd";
 import { getRequestsForGuest, updateRequestsForGuest } from "@/apis/request";
 
@@ -20,6 +21,7 @@ interface Request {
 }
 
 export default function GuestRequestsPage() {
+  const searchParams = useSearchParams();
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
@@ -42,18 +44,27 @@ export default function GuestRequestsPage() {
     fetchRequests();
   }, []);
 
+  useEffect(() => {
+    const requestId = searchParams.get("requestId");
+    if (requestId && requests.length > 0) {
+      const request = requests.find((r) => r.id === parseInt(requestId));
+      if (request) {
+        setSelectedRequest(request);
+      }
+    }
+  }, [requests, searchParams]);
+
   const handleCancelRequest = async (request: Request) => {
     if (request.status !== "pending") return;
 
     try {
       setUpdating(true);
-      await updateRequestsForGuest(request.id, { status: "canceled" });
+      await updateRequestsForGuest(request.id, { status: "cancelled" });
       message.success("Hủy yêu cầu thành công");
 
-      // Cập nhật trạng thái local
       setRequests((prev) =>
         prev.map((r) =>
-          r.id === request.id ? { ...r, status: "canceled" } : r
+          r.id === request.id ? { ...r, status: "cancelled" } : r
         )
       );
       setSelectedRequest(null);

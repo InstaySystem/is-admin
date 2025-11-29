@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, Button, Modal, message, Spin, Input } from "antd";
 import {
   getOrderServiceForGuest,
   updateOrderServiceForGuest,
-} from "@/apis/order_service"; // giả sử api tương tự request
+} from "@/apis/order_service";
 const { TextArea } = Input;
 
 interface ServiceType {
@@ -44,6 +45,7 @@ interface OrderService {
 }
 
 export default function GuestServicesPage() {
+  const searchParams = useSearchParams();
   const [services, setServices] = useState<OrderService[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -52,15 +54,14 @@ export default function GuestServicesPage() {
   );
   const [updating, setUpdating] = useState(false);
 
-  const [cancelReason, setCancelReason] = useState(""); // lý do hủy
+  const [cancelReason, setCancelReason] = useState("");
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
-  // Fetch services
   useEffect(() => {
     const fetchServices = async () => {
       try {
         setLoading(true);
-        const res = await getOrderServiceForGuest({});
+        const res = await getOrderServiceForGuest();
         setServices(res.data.data.order_services || []);
       } catch (error) {
         message.error("Không thể tải danh sách dịch vụ");
@@ -73,6 +74,16 @@ export default function GuestServicesPage() {
     fetchServices();
   }, []);
 
+  useEffect(() => {
+    const serviceId = searchParams.get("serviceId");
+    if (serviceId && services.length > 0) {
+      const service = services.find((s) => s.id === parseInt(serviceId));
+      if (service) {
+        setSelectedService(service);
+      }
+    }
+  }, [services, searchParams]);
+
   const handleCancelService = async () => {
     if (!selectedService || !cancelReason.trim()) {
       return message.warning("Vui lòng nhập lý do hủy!");
@@ -81,7 +92,7 @@ export default function GuestServicesPage() {
     try {
       setUpdating(true);
       await updateOrderServiceForGuest(selectedService.id, {
-        status: "canceled",
+        status: "cancelled",
         reason: cancelReason,
       });
       message.success("Hủy dịch vụ thành công");
@@ -89,7 +100,7 @@ export default function GuestServicesPage() {
       setServices((prev) =>
         prev.map((s) =>
           s.id === selectedService.id
-            ? { ...s, status: "canceled", cancel_reason: cancelReason }
+            ? { ...s, status: "cancelled", cancel_reason: cancelReason }
             : s
         )
       );
@@ -155,7 +166,6 @@ export default function GuestServicesPage() {
         ))}
       </div>
 
-      {/* Modal chi tiết */}
       <Modal
         title={`Dịch vụ ${selectedService?.code}`}
         open={!!selectedService}
@@ -218,7 +228,6 @@ export default function GuestServicesPage() {
         )}
       </Modal>
 
-      {/* Modal nhập lý do hủy */}
       <Modal
         title="Lý do hủy dịch vụ"
         open={cancelModalOpen}
