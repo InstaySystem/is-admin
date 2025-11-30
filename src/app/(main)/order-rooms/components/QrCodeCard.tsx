@@ -3,7 +3,7 @@
 import QRCode from "react-qr-code";
 
 export default function QRCodeCard({ code }: { code: string }) {
-  const url = `http://localhost:3000/order-rooms/${encodeURIComponent(
+  const url = `${window.location.origin}/order-rooms/${encodeURIComponent(
     code
   )}`;
 

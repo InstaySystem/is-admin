@@ -52,12 +52,6 @@ export default function OrderServicesPage() {
 
   const columns = [
     {
-      title: "Mã dịch vụ",
-      dataIndex: "code",
-      key: "code",
-      render: (v: string) => <span className="font-medium">{v}</span>,
-    },
-    {
       title: "Dịch vụ",
       dataIndex: "service_name",
       key: "service_name",

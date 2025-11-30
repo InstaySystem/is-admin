@@ -108,7 +108,7 @@ export default function Header() {
             <div className="text-xs text-gray-500 mt-1">
               Thời gian: {new Date(item.created_at).toLocaleString()}
             </div>
-            {item.staff_read.read_at && (
+            {item?.staff_read?.read_at && (
               <div className="text-xs text-green-600 mt-0.5">
                 Đã đọc: {new Date(item.staff_read.read_at).toLocaleString()}
               </div>

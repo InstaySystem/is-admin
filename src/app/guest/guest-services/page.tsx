@@ -56,6 +56,7 @@ export default function GuestServicesPage() {
 
   const [cancelReason, setCancelReason] = useState("");
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  console.log(selectedService);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -167,7 +168,7 @@ export default function GuestServicesPage() {
       </div>
 
       <Modal
-        title={`Dịch vụ ${selectedService?.code}`}
+        title={`Dịch vụ ${selectedService?.service.name}`}
         open={!!selectedService}
         onCancel={() => setSelectedService(null)}
         footer={
@@ -193,8 +194,8 @@ export default function GuestServicesPage() {
               {selectedService.quantity}
             </p>
             <p>
-              <span className="font-medium">Tổng giá:</span> $
-              {selectedService.total_price.toFixed(2)}
+              <span className="font-medium">Tổng giá:</span>
+              {selectedService.total_price.toFixed(2)} VND
             </p>
             <p>
               <span className="font-medium">Nội dung của khách:</span>{" "}

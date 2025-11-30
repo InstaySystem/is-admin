@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { Modal, Input, Button, message } from "antd";
+import { useRouter } from "next/navigation";
 import { createRequest } from "@/apis/request";
 
 const { TextArea } = Input;
@@ -22,6 +23,7 @@ export default function CreateRequestModal({
 }: CreateRequestModalProps) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async () => {
     if (!content.trim()) {
@@ -31,12 +33,14 @@ export default function CreateRequestModal({
     setLoading(true);
 
     try {
-      await createRequest({
+      const res = await createRequest({
         request_type_id: requestTypeId,
         content,
       });
 
       message.success("Tạo yêu cầu thành công");
+      const id = res.data.data.id;
+      router.push(`/guest/guest-requests?requestId=${id}`);
 
       setContent("");
       onClose();

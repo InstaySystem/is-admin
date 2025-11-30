@@ -27,6 +27,8 @@ export default function GuestRequestsPage() {
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [updating, setUpdating] = useState(false);
 
+  console.log(selectedRequest);
+
   useEffect(() => {
     const fetchRequests = async () => {
       try {
@@ -124,7 +126,7 @@ export default function GuestRequestsPage() {
       </div>
 
       <Modal
-        title={`Yêu cầu ${selectedRequest?.code}`}
+        title={`Yêu cầu ${selectedRequest?.request_type.name}`}
         open={!!selectedRequest}
         onCancel={() => setSelectedRequest(null)}
         footer={

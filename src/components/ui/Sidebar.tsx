@@ -17,6 +17,7 @@ import { FiMenu } from "react-icons/fi";
 import Image from "next/image";
 
 import { useAppStore } from "@/stores/useAppStore";
+import { IoChatbubbleOutline } from "react-icons/io5";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -38,6 +39,11 @@ const menuItems = [
     name: "Request",
     icon: <FaRegQuestionCircle />,
     path: "/manage-requests",
+  },
+  {
+    name: "Chat",
+    icon: <IoChatbubbleOutline />,
+    path: "/chat",
   },
 
   { name: "Staff", icon: <FaUsers />, path: "/staff", role: "admin-only" },
@@ -65,7 +71,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       animate={{ width: isOpen ? 240 : 70 }}
       className="h-screen bg-white shadow-md flex flex-col overflow-hidden relative text-black transition-all duration-300"
     >
-      <div className="flex items-center px-2 py-4 border-b border-gray-200">
+      <div className="flex h-[65px] items-center px-2 border-b border-gray-200">
         <button
           className="p-2 focus:outline-none cursor-pointer"
           onClick={toggle}
@@ -82,15 +88,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
               className="flex items-center gap-2 ml-2"
             >
               <Image
-                src="/images/logo.png"
-                width={30}
-                height={30}
+                src="/images/logo.jpg"
+                width={48}
+                height={48}
                 alt="Logo"
                 className="object-cover"
               />
-              <span className="text-[#608DBC] font-bold text-lg whitespace-nowrap">
-                Instay Admin
-              </span>
+
             </motion.div>
           )}
         </AnimatePresence>

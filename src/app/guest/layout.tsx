@@ -7,6 +7,7 @@ import { FileTextOutlined, AppstoreOutlined } from "@ant-design/icons";
 import HeaderGuest from "@/components/layout/HeaderGuest";
 import { FaSnapchat } from "react-icons/fa";
 import { useNotificationStore } from "@/stores/useNotificationStore";
+import { WSProvider } from "../providers/WSProvider";
 
 export default function GuestLayout({
   children,

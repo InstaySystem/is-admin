@@ -38,9 +38,7 @@ export default function GuestServicePage() {
       setServiceTypes(res.data.data.service_types || []);
       setRequestTypes(requestTypesRes.data.data.request_types || []);
     } catch (error: any) {
-      message.error(
-        error?.response?.data?.message || "Không thể tải danh sách dịch vụ"
-      );
+      message.error(error?.message || "Không thể tải danh sách dịch vụ");
     }
     setLoading(false);
   };
@@ -55,9 +53,7 @@ export default function GuestServicePage() {
       const res = await getServiceTypesBySlug(record.slug);
       setServices(res.data.data.service_type.services || []);
     } catch (error: any) {
-      message.error(
-        error?.response?.data?.message || "Không thể tải danh sách dịch vụ"
-      );
+      message.error(error.message || "Không thể tải danh sách dịch vụ");
     }
 
     setServicesLoading(false);

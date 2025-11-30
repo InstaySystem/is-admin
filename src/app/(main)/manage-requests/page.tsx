@@ -62,16 +62,10 @@ export default function ManageRequestPage() {
 
   const columns = [
     {
-      title: "Code",
-      dataIndex: "code",
-      key: "code",
+      title: "Tên phòng",
+      dataIndex: "room_name",
+      key: "room_name",
       render: (text: string) => <span className="font-medium">{text}</span>,
-    },
-    {
-      title: "Nội dung",
-      dataIndex: "content",
-      key: "content",
-      ellipsis: true,
     },
     {
       title: "Trạng thái",
@@ -93,17 +87,8 @@ export default function ManageRequestPage() {
     },
     {
       title: "Loại yêu cầu",
-      key: "request_type",
-      render: (_: any, record: any) => (
-        <span>{record.request_type?.name || "-"}</span>
-      ),
-    },
-    {
-      title: "Phòng",
-      key: "order_room",
-      render: (_: any, record: any) => (
-        <span>{record.order_room?.room_number || "-"}</span>
-      ),
+      key: "request_type_name",
+      render: (_: any, record: any) => <span>{record.request_type_name}</span>,
     },
     {
       title: "Thời gian",

@@ -57,12 +57,10 @@ export default function DetailGuestServicePage() {
     },
   });
 
-  const {
-    control: orderControl,
-    handleSubmit: handleOrderSubmit,
-  } = useForm<OrderServiceFormValues>({
-    defaultValues: { quantity: 1, guest_note: "" },
-  });
+  const { control: orderControl, handleSubmit: handleOrderSubmit } =
+    useForm<OrderServiceFormValues>({
+      defaultValues: { quantity: 1, guest_note: "" },
+    });
 
   useEffect(() => {
     (async () => {
@@ -119,7 +117,8 @@ export default function DetailGuestServicePage() {
       });
       showAlert("success", res.data.message || "Đặt dịch vụ thành công");
       setIsModalOpen(false);
-      router.push("/guest");
+      const id = res.data.data.id;
+      router.push(`/guest/guest-services?serviceId=${id}`);
     } catch (err: any) {
       console.error(err);
       showAlert("error", err.message);
