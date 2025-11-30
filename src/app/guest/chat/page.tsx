@@ -152,6 +152,11 @@ export default function GuestChat() {
     setSelectedChatId(chatId);
 
     await loadMessagesForChat(code, chatId);
+    if (isConnected) {
+      sendWS("mark_read", {
+        chat_id: chatId,
+      });
+    }
 
     markRead(chatId, "guest");
   };

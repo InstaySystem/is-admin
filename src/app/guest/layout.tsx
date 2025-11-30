@@ -8,6 +8,7 @@ import HeaderGuest from "@/components/layout/HeaderGuest";
 import { FaSnapchat } from "react-icons/fa";
 import { useNotificationStore } from "@/stores/useNotificationStore";
 import { WSProvider } from "../providers/WSProvider";
+import { useAppStore } from "@/stores/useAppStore";
 
 export default function GuestLayout({
   children,
@@ -19,7 +20,6 @@ export default function GuestLayout({
   const router = useRouter();
 
   const addNotification = useNotificationStore((s) => s.addNotification);
-
   useEffect(() => {
     const sse = new EventSource(`${process.env.NEXT_PUBLIC_API_URL}/sse`, {
       withCredentials: true,

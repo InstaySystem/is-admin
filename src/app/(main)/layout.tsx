@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import { message } from "antd";
 import { useNotificationStore } from "@/stores/useNotificationStore";
+import { useAppStore } from "@/stores/useAppStore";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -28,8 +29,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const [messageApi, contextHolder] = message.useMessage();
 
   const addNotification = useNotificationStore((s) => s.addNotification);
+  const role = useAppStore((s) => s._role);
 
   useEffect(() => {
+    if (role === "admin") {
+      console.log("Admin role, skipping SSE");
+      return;
+    }
     const sse = new EventSource(`${process.env.NEXT_PUBLIC_API_URL}/sse`, {
       withCredentials: true,
     });

@@ -40,12 +40,6 @@ const menuItems = [
     icon: <FaRegQuestionCircle />,
     path: "/manage-requests",
   },
-  {
-    name: "Chat",
-    icon: <IoChatbubbleOutline />,
-    path: "/chat",
-  },
-
   { name: "Staff", icon: <FaUsers />, path: "/staff", role: "admin-only" },
   {
     name: "Department",

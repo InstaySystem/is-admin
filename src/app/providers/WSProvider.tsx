@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useRef } from "react";
 import { message } from "antd";
 import { useMessageStore } from "@/stores/useMessageStore";
+import { useAppStore } from "@/stores/useAppStore";
 
 interface WSContextProps {
   sendWS: (event: string, data: any) => void;
@@ -24,8 +25,14 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
 
   const store = useMessageStore();
   const [msgApi, contextHolder] = message.useMessage();
+  const role = useAppStore((s) => s._role);
 
   const connectWS = () => {
+    if (role === "admin") {
+      console.log("Admin role detected, skipping WS connection");
+      return;
+    }
+
     try {
       const url = "http://localhost:8080/api/v1/ws";
       const ws = new WebSocket(url);
@@ -86,11 +93,6 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
         break;
 
       case "chat_created":
-        if (res.data) {
-          store.addOrUpdateChat(res.data);
-        }
-        break;
-
       case "chat_updated":
         if (res.data) {
           store.addOrUpdateChat(res.data);
@@ -98,9 +100,10 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
         break;
 
       case "mark_read":
-        if (res.data?.chatId && res.data?.userId) {
-          store.markRead(res.data.chatId, res.data.userId);
+        if (res.data?.chatId) {
+          store.markRead(res.data.chatId, "null");
         }
+        console.log("Mark read confirmed:", res);
         break;
 
       case "error":
@@ -108,7 +111,7 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
         break;
 
       default:
-        console.warn("⚠️ Unknown WS event:", res.event);
+        console.warn("Unknown WS event:", res.event);
         break;
     }
   };
@@ -120,7 +123,7 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
         wsRef.current.close();
       }
     };
-  }, []);
+  }, [role]); // Reconnect nếu role thay đổi
 
   const sendWS = (event: string, data: any) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {

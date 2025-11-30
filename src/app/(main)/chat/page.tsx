@@ -51,6 +51,11 @@ export default function AdminChatPage() {
       if (res.data?.data?.chat?.messages) {
         loadMessages(chatId, res.data.data.chat.messages);
       }
+      if (isConnected) {
+        sendWS("mark_read", {
+          chat_id: chatId,
+        });
+      }
       markRead(chatId, "staff");
     } catch (err) {
       console.error("Lỗi tải tin nhắn:", err);

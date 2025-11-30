@@ -176,7 +176,7 @@ export default function Header() {
             placement="bottomRight"
           >
             <Badge count={unreadMessagesCount} size="small">
-              <IoChatbubbleOutline className="text-2xl text-black cursor-pointer hover:text-blue-600" />
+              <IoChatbubbleOutline onClick={()=> router.push("/chat")} className="text-2xl text-black cursor-pointer hover:text-blue-600" />
             </Badge>
           </Dropdown>
 
