@@ -13,11 +13,11 @@ import {
   FaBookMedical,
   FaFirstOrderAlt,
 } from "react-icons/fa";
-import { FiMenu } from "react-icons/fi";
+// import { FiMenu } from "react-icons/fi";
 import Image from "next/image";
-
+import { LuPanelLeftClose,LuPanelLeftOpen  } from "react-icons/lu";
 import { useAppStore } from "@/stores/useAppStore";
-import { IoChatbubbleOutline } from "react-icons/io5";
+// import { IoChatbubbleOutline } from "react-icons/io5";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -61,23 +61,17 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   });
 
   return (
-    <motion.div
-      animate={{ width: isOpen ? 240 : 70 }}
-      className="h-screen bg-white shadow-md flex flex-col overflow-hidden relative text-black transition-all duration-300"
+    <motion.aside
+      initial={false}
+      animate={{ width: isOpen ? 240 : 80 }}
+      className="h-screen bg-white shadow-md flex flex-col overflow-hidden relative text-black transition-all duration-300 ease-in-out"
     >
       <div className="flex h-[65px] items-center px-2 border-b border-gray-200">
-        <button
-          className="p-2 focus:outline-none cursor-pointer"
-          onClick={toggle}
-        >
-          <FiMenu size={24} />
-        </button>
-
         <AnimatePresence>
           {isOpen && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, width: 0  }}
+              animate={{ opacity: 1, width: "auto" }}
               exit={{ opacity: 0 }}
               className="flex items-center gap-2 ml-2"
             >
@@ -92,54 +86,67 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             </motion.div>
           )}
         </AnimatePresence>
+        <button
+          onClick={toggle}
+  className={`transition-all p-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-indigo-600 ${isOpen ? 'ml-auto' : 'mx-auto'}`}
+        >
+          {isOpen ? <LuPanelLeftClose size={22} /> : <LuPanelLeftOpen size={22} />}
+        </button>
       </div>
 
-      <nav className="flex-1 mt-4">
+      <nav className="flex-1 py-4 px-3 flex flex-col gap-2">
         {filteredMenu.map((item) => {
           const isActive = pathname === item.path;
           return (
-            <Link href={item.path} key={item.name}>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className={`flex items-center gap-3 cursor-pointer px-4 py-3 rounded-md transition-colors ${
-                  isActive
-                    ? "bg-blue-100 text-[#608DBC] font-semibold"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
+            <Link href={item.path} key={item.path}>
+              <li
+                className={`
+                  relative flex items-center py-3 px-3 rounded-xl cursor-pointer transition-all duration-200
+                  ${
+                    isActive
+                      ? "bg-indigo-50" 
+                      : "hover:bg-indigo-50"
+                  }
+                `}
               >
-                <span className="text-lg">{item.icon}</span>
+                <div
+                  className={`
+                    p-2 rounded-lg transition-all duration-300 flex items-center justify-center 
+                    ${
+                      isActive
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" 
+                        : "bg-transparent text-gray-500 group-hover:text-gray-700" 
+                    }
+                  `}
+                >
+                  {item.icon}
+                </div>
+                <div className={`overflow-hidden flex-1 whitespace-nowrap transition-all duration-300 w-auto opacity-100 ml-3`}>
+                   <span className={`font-bold ${isActive ? "text-indigo-500" : "text-gray-600 group-hover:text-indigo-500"}`}>
+                     {item.name}
+                   </span>
+                </div>
+              </li>
 
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      {item.name}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+              
             </Link>
           );
         })}
       </nav>
 
-      <div className="px-4 py-4 border-t border-gray-200">
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="text-gray-600 text-sm"
+      <div className={isOpen ? `p-4 border-t border-gray-100`: `hidden`}>
+        <AnimatePresence mode="wait">
+          <motion.div
+              key="copyright"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="text-gray-600 text-xs text-center font-medium whitespace-nowrap"
             >
               &copy; 2025 Instay Application
             </motion.div>
-          )}
         </AnimatePresence>
       </div>
-    </motion.div>
+    </motion.aside>
   );
 }
