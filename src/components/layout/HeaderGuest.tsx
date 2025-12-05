@@ -127,7 +127,6 @@ export default function HeaderGuest() {
 
           <Dropdown
             menu={{ items: [] }}
-            trigger={["click"]}
             placement="bottomRight"
           >
             <Button
@@ -137,7 +136,6 @@ export default function HeaderGuest() {
               <Avatar size={42} className="bg-blue-600 text-white shadow">
                 GU
               </Avatar>
-              <DownOutlined className="text-gray-600" />
             </Button>
           </Dropdown>
         </div>

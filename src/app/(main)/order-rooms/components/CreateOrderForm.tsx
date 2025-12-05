@@ -100,7 +100,7 @@ export default function CreateOrderForm() {
           onChange={(value) => setRoomId(value)}
           options={rooms.map((r) => ({
             label: `${r.name} — ${r.room_type?.name || "N/A"} (Tầng ${
-              r.floor?.name || "N/A"
+              r.floor || "N/A"
             })`,
             value: r.id,
           }))}

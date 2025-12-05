@@ -100,8 +100,8 @@ export default function ManageBooking() {
       key: "dates",
       render: (_: any, record: Booking) => (
         <span>
-          {dayjs(record.check_in).format("YYYY-MM-DD")} -{" "}
-          {dayjs(record.check_out).format("YYYY-MM-DD")}
+          {dayjs(record.check_in).format("YY/MM/DD HH:mm")} -{" "}
+          {dayjs(record.check_out).format("YY/MM/DD HH:mm")}
         </span>
       ),
     },

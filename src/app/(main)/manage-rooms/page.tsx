@@ -160,7 +160,7 @@ export default function ManageRoom() {
       title: "Tầng",
       key: "floor",
       render: (_: any, record: Room) =>
-        record.floor ? record.floor.name : "—",
+        record.floor ? record.floor : "—",
     },
     {
       title: "Thao tác",
