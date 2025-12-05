@@ -3,12 +3,15 @@
 import { useEffect } from "react";
 import { message } from "antd";
 import { usePathname, useRouter } from "next/navigation";
-import { FileTextOutlined, AppstoreOutlined } from "@ant-design/icons";
+import {
+  FileTextOutlined,
+  AppstoreOutlined,
+  HomeOutlined,
+} from "@ant-design/icons";
 import HeaderGuest from "@/components/layout/HeaderGuest";
 import { FaSnapchat } from "react-icons/fa";
 import { useNotificationStore } from "@/stores/useNotificationStore";
-import { WSProvider } from "../providers/WSProvider";
-import { useAppStore } from "@/stores/useAppStore";
+import { IoChatbubbleOutline } from "react-icons/io5";
 
 export default function GuestLayout({
   children,
@@ -49,7 +52,7 @@ export default function GuestLayout({
     {
       key: "/guest",
       label: "Home",
-      icon: <AppstoreOutlined className="text-xl" />,
+      icon: <HomeOutlined className="text-xl" />,
     },
     {
       key: "/guest/guest-requests",
@@ -64,7 +67,7 @@ export default function GuestLayout({
     {
       key: "/guest/chat",
       label: "Chat",
-      icon: <FaSnapchat className="text-xl" />,
+      icon: <IoChatbubbleOutline className="text-xl" />,
     },
   ];
 
@@ -81,7 +84,7 @@ export default function GuestLayout({
           return (
             <button
               key={item.key}
-              className={`flex flex-col items-center text-xs ${
+              className={`flex flex-col items-center text-xs cursor-pointer ${
                 active ? "text-blue-600" : "text-gray-500"
               }`}
               onClick={() => router.push(item.key)}

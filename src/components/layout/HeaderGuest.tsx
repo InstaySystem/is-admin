@@ -11,9 +11,8 @@ import {
   getNotificationsForGuest,
 } from "@/apis/notification";
 import { useNotificationStore } from "@/stores/useNotificationStore";
-import { IoChatbubbleOutline, IoNotificationsOutline } from "react-icons/io5";
+import { IoNotificationsOutline } from "react-icons/io5";
 import { useMessageStore } from "@/stores/useMessageStore";
-import Image from "next/image";
 
 export default function HeaderGuest() {
   const router = useRouter();
@@ -75,15 +74,6 @@ export default function HeaderGuest() {
     }
   };
 
-  const userMenuItems = [
-    {
-      key: "profile",
-      label: "Đây là Guest",
-      icon: <UserOutlined />,
-    },
-    { type: "divider" as const },
-  ];
-
   const notificationMenu = (
     <List
       className="w-80 max-h-96 overflow-auto bg-white rounded-md shadow-lg"
@@ -113,42 +103,6 @@ export default function HeaderGuest() {
     />
   );
 
-  // const messageMenu = (
-  //   <List
-  //     className="w-80 max-h-96 overflow-auto bg-white rounded-md shadow-lg"
-  //     dataSource={messages}
-  //     renderItem={(item: any) => (
-  //       <List.Item
-  //         className={`cursor-pointer px-4! py-3 rounded-md transition-all ${
-  //           item.staff_read === null
-  //             ? "bg-gray-400 hover:bg-gray-200"
-  //             : "bg-white hover:bg-gray-50"
-  //         }`}
-  //       >
-  //         <div className="flex flex-col text-gray-900 font-medium">
-  //           <div>
-  //             {typeof item.content === "string"
-  //               ? item.content
-  //               : item.content?.text}
-  //           </div>
-
-  //           {item.content?.image_key && (
-  //             <Image
-  //               src={item.content.image_key}
-  //               className="w-32 h-auto rounded mt-2"
-  //               alt="he"
-  //             />
-  //           )}
-
-  //           <div className="text-xs text-gray-500 mt-1">
-  //             Thời gian: {new Date(item.created_at).toLocaleString()}
-  //           </div>
-  //         </div>
-  //       </List.Item>
-  //     )}
-  //   />
-  // );
-
   return (
     <header className="w-full bg-white shadow-md border-b border-gray-100 sticky top-0 z-40 backdrop-blur-md">
       <div className="flex items-center justify-between px-8 py-4">
@@ -160,16 +114,6 @@ export default function HeaderGuest() {
         </div>
 
         <div className="flex items-center gap-5">
-          {/* <Dropdown
-            overlay={messageMenu}
-            trigger={["click"]}
-            placement="bottomRight"
-          >
-            <Badge count={unreadMessagesCount} size="small">
-              <IoChatbubbleOutline className="text-2xl text-black cursor-pointer hover:text-blue-600" />
-            </Badge>
-          </Dropdown> */}
-
           <Dropdown
             overlay={notificationMenu}
             trigger={["click"]}
@@ -182,7 +126,7 @@ export default function HeaderGuest() {
           </Dropdown>
 
           <Dropdown
-            menu={{ items: userMenuItems }}
+            menu={{ items: [] }}
             trigger={["click"]}
             placement="bottomRight"
           >

@@ -27,7 +27,6 @@ interface OrderServiceFormValues {
 
 export default function DetailGuestServicePage() {
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
-  const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({
     open: false,
     type: "success" as "success" | "error" | "info" | "warning",
@@ -40,7 +39,7 @@ export default function DetailGuestServicePage() {
   const [modalLoading, setModalLoading] = useState(false);
 
   const params = useParams();
-  const serviceSlug = params.id;
+  const serviceSlug = params.id?.toString();
   const router = useRouter();
 
   const showAlert = (type: typeof alert.type, message: string) => {
@@ -132,7 +131,7 @@ export default function DetailGuestServicePage() {
       <h2 className="text-lg font-semibold text-gray-800 mb-4">
         Chi tiết dịch vụ
       </h2>
-      <Form layout="vertical" disabled={loading}>
+      <Form layout="vertical" disabled={true}>
         <div className="grid grid-cols-2 gap-6">
           <Form.Item label="Tên dịch vụ">
             <Controller
@@ -181,7 +180,11 @@ export default function DetailGuestServicePage() {
               <ImagesUploader
                 fileList={fileList}
                 setFileList={setFileList}
-                setValue={setValue}
+                setValue={(field: string, value: any[]) => {
+                  if (field === "images") {
+                    setValue("images", value);
+                  }
+                }}
                 handlePreview={() => {}}
                 disabled
               />

@@ -12,7 +12,6 @@ import {
   updateRoomType,
 } from "@/apis/room_type";
 import { RoomType } from "@/types/room";
-import { SearchOutlined } from "@ant-design/icons";
 import CommonModal from "@/components/modals/CommonModal";
 import RoomTypeModal from "./components/RoomTypeModal";
 
@@ -67,7 +66,7 @@ export default function ManageRoomTypes() {
   };
 
   const handleEdit = (id: string) => {
-    const item = roomTypes.find((x) => x.id === id);
+    const item = roomTypes.find((x) => x.id === parseInt(id));
     if (!item) return;
 
     setModalMode("edit");
@@ -140,14 +139,14 @@ export default function ManageRoomTypes() {
             size="small"
             type="primary"
             className="bg-[#608DBC]!"
-            onClick={() => handleEdit(record.id)}
+            onClick={() => handleEdit(record.id.toString())}
           >
             Sửa
           </Button>
           <Button
             size="small"
             danger
-            onClick={() => handleOpenDeleteModal(record.id)}
+            onClick={() => handleOpenDeleteModal(record.id.toString())}
           >
             Xóa
           </Button>

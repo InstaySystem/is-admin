@@ -1,6 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { message } from "antd";
 import { useMessageStore } from "@/stores/useMessageStore";
 import { useAppStore } from "@/stores/useAppStore";
@@ -8,6 +15,7 @@ import { useAppStore } from "@/stores/useAppStore";
 interface WSContextProps {
   sendWS: (event: string, data: any) => void;
   isConnected: boolean;
+  reconnect: () => void;
 }
 
 const WSContext = createContext<WSContextProps | null>(null);
@@ -21,25 +29,38 @@ export const useWS = () => {
 export const WSProvider = ({ children }: { children: React.ReactNode }) => {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
-  const [isConnected, setIsConnected] = React.useState(false);
+  const shouldReconnect = useRef(true);
+  const [isConnected, setIsConnected] = useState(false);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const store = useMessageStore();
+  const { chats, addMessage, addOrUpdateChat, markRead } = useMessageStore();
   const [msgApi, contextHolder] = message.useMessage();
   const role = useAppStore((s) => s._role);
 
+  const reconnect = () => {
+    if (!isConnected) {
+      connectWS();
+    }
+  };
+
   const connectWS = () => {
-    if (role === "admin") {
-      console.log("Admin role detected, skipping WS connection");
+    if (role === "admin") return;
+
+    if (wsRef.current) {
+      console.log("WS already exists, skip connect");
       return;
     }
+
+    shouldReconnect.current = true;
 
     try {
       const url = "http://localhost:8080/api/v1/ws";
       const ws = new WebSocket(url);
+
       wsRef.current = ws;
 
       ws.onopen = () => {
-        console.log("WS Connected");
+        console.log("✅ WS Connected");
         setIsConnected(true);
         reconnectAttemptsRef.current = 0;
       };
@@ -54,14 +75,15 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
       };
 
       ws.onerror = (e) => {
-        console.error("WS Error", e);
-        setIsConnected(false);
+        console.error("❌ WS Error", e);
       };
 
       ws.onclose = () => {
-        console.log("WS Closed");
+        console.log("⚠️ WS Closed");
         setIsConnected(false);
-        if (reconnectAttemptsRef.current < 5) {
+        wsRef.current = null;
+
+        if (shouldReconnect.current && reconnectAttemptsRef.current < 5) {
           reconnectAttemptsRef.current++;
           setTimeout(connectWS, 3000);
         }
@@ -73,38 +95,69 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
 
   const handleWSMessage = (res: any) => {
     switch (res.event) {
-      case "message_created":
-        if (res.data) {
-          store.addMessage(res.data.chatId, res.data);
-        }
-        break;
+      case "new_message": {
+        if (!res.data) return;
 
-      case "new_message":
-        if (res.data) {
-          store.addMessage(res.data.chatId || res.data.chat_id, res.data);
-          if (res.data.chatId || res.data.chat_id) {
-            store.addOrUpdateChat({
-              id: res.data.chatId || res.data.chat_id,
-              last_message: res.data.content,
-              updated_at: res.data.created_at || new Date().toISOString(),
-            });
-          }
-        }
-        break;
+        const chatId = res.data.chatId || res.data.chat_id;
 
-      case "chat_created":
+        addMessage(chatId, res.data);
+
+        const currentChat = chats.find((c) => c.id === chatId);
+
+        if (currentChat) {
+          addOrUpdateChat({
+            ...currentChat,
+            last_message: {
+              id: res.data.id,
+              content: res.data.content,
+              sender_type: res.data.sender_type,
+              created_at: res.data.created_at,
+              is_read:
+                res.data.sender_type === "staff" ||
+                res.data.read_by?.includes("staff"),
+            },
+          });
+        }
+
+        break;
+      }
+
       case "chat_updated":
-        if (res.data) {
-          store.addOrUpdateChat(res.data);
-        }
+        if (res.data) addOrUpdateChat(res.data);
         break;
 
-      case "mark_read":
-        if (res.data?.chatId) {
-          store.markRead(res.data.chatId, "null");
+      case "mark_read": {
+        console.log("✅ mark_read:", res.data);
+
+        const { chat_id, reader_id, reader_type, read_at } = res.data || {};
+
+        if (!chat_id || !reader_id) return;
+
+        markRead(
+          chat_id.toString(),
+          reader_id.toString(),
+          reader_type.toString(),
+          read_at.toString()
+        );
+
+        const store = useMessageStore.getState();
+        const chats = store.chats;
+        const currentChat = chats.find((c) => c.id === chat_id.toString());
+
+        if (currentChat?.last_message) {
+          addOrUpdateChat({
+            ...currentChat,
+            last_message: {
+              ...currentChat.last_message,
+              is_read: true,
+              read_at: read_at || currentChat.last_message.read_at,
+              read_by: reader_type || "Anonymous",
+            },
+          });
         }
-        console.log("Mark read confirmed:", res);
+
         break;
+      }
 
       case "error":
         msgApi.error(res.data?.message || "Lỗi không xác định");
@@ -112,32 +165,44 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
 
       default:
         console.warn("Unknown WS event:", res.event);
-        break;
     }
   };
 
   useEffect(() => {
     connectWS();
+
     return () => {
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        wsRef.current.close();
+      shouldReconnect.current = false;
+
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
+
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+
+      setIsConnected(false);
     };
-  }, [role]); // Reconnect nếu role thay đổi
+  }, [role]);
 
   const sendWS = (event: string, data: any) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      const payload = { event, data, timestamp: Date.now() };
-      wsRef.current.send(JSON.stringify(payload));
-      console.log("📤 WS Sent:", event, data);
-    } else {
-      msgApi.error("Mất kết nối WebSocket. Đang kết nối lại...");
-      console.warn("WS not ready, current state:", wsRef.current?.readyState);
+    const ws = wsRef.current;
+
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      console.warn("⚠️ WS chưa sẵn sàng, bỏ send:", event);
+      return;
     }
+
+    const payload = { event, data, timestamp: Date.now() };
+    ws.send(JSON.stringify(payload));
+    console.log("📤 WS Sent:", event, data);
   };
 
   return (
-    <WSContext.Provider value={{ sendWS, isConnected }}>
+    <WSContext.Provider value={{ sendWS, isConnected, reconnect }}>
       {contextHolder}
       {children}
     </WSContext.Provider>

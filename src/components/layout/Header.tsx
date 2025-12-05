@@ -31,7 +31,7 @@ export default function Header() {
   const { notifications, unreadCount, setNotifications, setUnreadCount } =
     useNotificationStore();
 
-  const { messages } = useMessageStore();
+  const { messages = [] } = useMessageStore();
   const unreadMessagesCount = messages.length;
 
   useEffect(() => {
@@ -119,34 +119,6 @@ export default function Header() {
     />
   );
 
-  const messageMenu = (
-    <List
-      className="w-80 max-h-96 overflow-auto bg-white rounded-md shadow-lg"
-      dataSource={messages}
-      renderItem={(item: any) => (
-        <List.Item
-          className={`cursor-pointer px-4! py-3 rounded-md transition-all ${
-            item.staff_read === null
-              ? "bg-gray-400 hover:bg-gray-200"
-              : "bg-white hover:bg-gray-50"
-          }`}
-        >
-          <div className="flex flex-col text-gray-900 font-medium">
-            <div>{item.content}</div>
-            <div className="text-xs text-gray-500 mt-1">
-              Thời gian: {new Date(item.created_at).toLocaleString()}
-            </div>
-            {item.is_read && (
-              <div className="text-xs text-green-600 mt-0.5">
-                Đã đọc: {new Date(item.read_at).toLocaleString()}
-              </div>
-            )}
-          </div>
-        </List.Item>
-      )}
-    />
-  );
-
   const userMenuItems = [
     {
       key: "profile",
@@ -154,7 +126,7 @@ export default function Header() {
       icon: <UserOutlined />,
       onClick: () => router.push("/profile"),
     },
-    { type: "divider" },
+    { type: "divider" as const },
     {
       key: "logout",
       label: "Đăng xuất",
@@ -170,15 +142,12 @@ export default function Header() {
         <h1 className="text-2xl font-semibold text-gray-900">Trang quản lý</h1>
 
         <div className="flex items-center gap-5">
-          <Dropdown
-            overlay={messageMenu}
-            trigger={["click"]}
-            placement="bottomRight"
-          >
-            <Badge count={unreadMessagesCount} size="small">
-              <IoChatbubbleOutline onClick={()=> router.push("/chat")} className="text-2xl text-black cursor-pointer hover:text-blue-600" />
-            </Badge>
-          </Dropdown>
+          {/* <Badge count={unreadMessagesCount} size="small"> */}
+          <IoChatbubbleOutline
+            onClick={() => router.push("/chat")}
+            className="text-2xl text-black cursor-pointer hover:text-blue-600"
+          />
+          {/* </Badge> */}
 
           <Dropdown
             overlay={notificationMenu}

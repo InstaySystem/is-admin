@@ -14,7 +14,7 @@ export const createRoomType = async (data: CreateRoomTypeRequest) => {
 };
 
 export const updateRoomType = async (
-  id: string,
+  id: number,
   data: UpdateRoomTypeRequest
 ) => {
   return await axiosRequest.put(`/admin/room-types/${id}`, data);

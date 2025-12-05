@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Card, Button, Modal, message, Tag, Flex } from "antd";
+import { useParams } from "next/navigation";
+import { Card, Button, Modal, message, Tag } from "antd";
 
 import {
   getOrderServiceById,
@@ -38,6 +38,7 @@ export default function OrderServiceDetailPage() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <div className="p-6 text-center">Đang tải...</div>;

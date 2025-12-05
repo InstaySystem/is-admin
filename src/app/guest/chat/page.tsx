@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Button, Input, List, Modal, message, Select, Empty } from "antd";
@@ -6,6 +7,7 @@ import { useMessageStore } from "@/stores/useMessageStore";
 import { getChatsForGuest, getChatByIdForGuest } from "@/apis/chat";
 import { getDepartmentsFilter } from "@/apis/department";
 import { Department } from "@/types/user";
+import { Chat } from "@/types/chat";
 
 export default function GuestChat() {
   const { sendWS, isConnected } = useWS();
@@ -47,6 +49,30 @@ export default function GuestChat() {
     };
     fetchChats();
   }, [addOrUpdateChat]);
+
+  useEffect(() => {
+    if (selectedChatId && messagesMap[selectedChatId]) {
+      const messages = messagesMap[selectedChatId];
+      if (messages.length > 0) {
+        const lastMsg = messages[messages.length - 1];
+        const currentChat = chats.find((c) => c.id === selectedChatId);
+        if (currentChat) {
+          addOrUpdateChat({
+            ...currentChat,
+            last_message: {
+              id: lastMsg.id,
+              content: lastMsg.content,
+              sender_type: lastMsg.sender_type,
+              created_at: lastMsg.created_at,
+              is_read:
+                lastMsg.read_by?.includes("guest") ||
+                lastMsg.sender_type === "guest",
+            },
+          });
+        }
+      }
+    }
+  }, [messagesMap, selectedChatId]);
 
   const handleNewChat = async () => {
     try {
@@ -92,18 +118,42 @@ export default function GuestChat() {
 
     sendWS("send_message", payload);
 
+    const currentChatId = selectedChatId || newReceiverID?.toString();
+    if (currentChatId) {
+      const currentChat = chats.find((c) => c.id === currentChatId);
+      if (currentChat) {
+        addOrUpdateChat({
+          ...currentChat,
+          last_message: {
+            id: Date.now().toString(),
+            content: messageContent,
+            sender_type: "guest",
+            created_at: new Date().toISOString(),
+            is_read: true,
+          },
+        });
+      }
+    }
+
     setMessageContent("");
 
     if (!selectedChatId && newReceiverID) {
       const dep = departments.find((d) => d.id === newReceiverID);
-      const tempChatId = `temp-chat-${newReceiverID}`;
+      const tempChatId = newReceiverID.toString();
 
-      const newChat = {
+      const newChat: Chat = {
         id: tempChatId,
         name: dep?.display_name || "Phòng mới",
         department_id: dep?.id,
         receiver_id: dep?.id,
         code: `${newReceiverID}`,
+        last_message: {
+          id: Date.now().toString(),
+          content: messageContent,
+          sender_type: "guest",
+          created_at: new Date().toISOString(),
+          is_read: true,
+        },
       };
 
       addOrUpdateChat(newChat);
@@ -117,16 +167,15 @@ export default function GuestChat() {
     ? messagesMap[selectedChatId] || []
     : [];
 
-  const loadMessagesForChat = async (chatCode: string, chatId: string) => {
+  const loadMessagesForChat = async (
+    chatCode: string | undefined,
+    chatId: string
+  ) => {
     try {
-      console.log("🔍 Loading messages for code:", chatCode);
       const res = await getChatByIdForGuest(chatCode);
-      console.log("📨 API Response:", res.data);
-
       if (res.data?.data?.chat.messages) {
-        console.log("✅ Messages found:", res.data.data.chat.messages.length);
-
-        res.data.data.chat.messages.forEach((msg: any) => {
+        const messages = res.data.data.chat.messages;
+        messages.forEach((msg: any) => {
           addMessage(chatId, {
             id: msg.id,
             chat_id: chatId,
@@ -137,18 +186,39 @@ export default function GuestChat() {
             created_at: msg.created_at,
             read_by: msg.is_read ? [msg.sender_type] : [],
             image_key: msg.image_key,
+            read_at: msg.read_at,
+            reader_type: msg.reader_type,
           });
         });
+
+        if (messages.length > 0) {
+          const lastMsg = messages[messages.length - 1];
+          const currentChat = chats.find((c) => c.id === chatId);
+          if (currentChat) {
+            addOrUpdateChat({
+              ...currentChat,
+              last_message: {
+                id: lastMsg.id,
+                content: lastMsg.content,
+                sender_type: lastMsg.sender_type,
+                created_at: lastMsg.created_at,
+                is_read: lastMsg.is_read,
+              },
+            });
+          }
+        }
       }
 
-      markRead(chatId, "guest");
+      if (isConnected) {
+        sendWS("mark_read", { chat_id: chatId });
+      }
     } catch (err) {
       console.error("❌ Lỗi tải tin nhắn:", err);
       message.error("Không tải được tin nhắn cũ");
     }
   };
 
-  const handleSelectChat = async (chatId: string, code: string) => {
+  const handleSelectChat = async (chatId: string, code: string | undefined) => {
     setSelectedChatId(chatId);
 
     await loadMessagesForChat(code, chatId);
@@ -158,7 +228,6 @@ export default function GuestChat() {
       });
     }
 
-    markRead(chatId, "guest");
   };
 
   return (
@@ -174,31 +243,99 @@ export default function GuestChat() {
         </Button>
 
         {chats.length === 0 ? (
-          <Empty description="Không có phòng chat nào" />
+          <div className="flex items-center justify-center h-full">
+            <Empty
+              description={
+                <span className="text-gray-400">
+                  Chưa có cuộc trò chuyện nào
+                </span>
+              }
+            />
+          </div>
         ) : (
-          <List
-            dataSource={chats}
-            className="flex-1 overflow-auto"
-            renderItem={(chat) => (
-              <List.Item
-                className={`cursor-pointer p-3 rounded transition-colors ${
-                  selectedChatId === chat.id
-                    ? "bg-blue-50 border-l-4 border-blue-500"
-                    : "hover:bg-gray-50"
-                }`}
-                onClick={() => handleSelectChat(chat.id, chat.code)}
-              >
-                <div className="w-full">
-                  <div className="font-semibold text-gray-900">{chat.name}</div>
-                  {chat.last_message && (
-                    <div className="text-sm text-gray-500 truncate mt-1">
-                      {chat.last_message?.content}
+          <div className="py-2">
+            {chats.map((chat) => {
+              const isSelected = selectedChatId === chat.id;
+              const hasUnread =
+                chat.last_message &&
+                !chat.last_message.is_read &&
+                chat.last_message.sender_type !== "guest";
+
+              return (
+                <div
+                  key={chat.id}
+                  className={`
+            px-3 py-2 mx-2 mb-1 rounded-lg cursor-pointer transition-all duration-200
+            ${isSelected ? "bg-blue-50 shadow-sm" : "hover:bg-gray-50"}
+          `}
+                  onClick={() => handleSelectChat(chat.id, chat.code)}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`
+              w-12 h-12 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-sm
+              ${
+                isSelected
+                  ? "bg-blue-500"
+                  : "bg-linear-to-br from-blue-400 to-blue-600"
+              }
+            `}
+                    >
+                      {chat.department?.display_name
+                        ?.charAt(0)
+                        ?.toUpperCase() || "?"}
                     </div>
-                  )}
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3
+                          className={`
+                  font-semibold truncate
+                  ${isSelected ? "text-blue-600" : "text-gray-900"}
+                  ${hasUnread ? "font-bold" : ""}
+                `}
+                        >
+                          {chat.department?.display_name}
+                        </h3>
+                        {hasUnread && (
+                          <div className="w-2.5 h-2.5 bg-blue-500 rounded-full shrink-0 ml-2"></div>
+                        )}
+                      </div>
+
+                      {chat.last_message && (
+                        <div className="flex items-center gap-1">
+                          <p
+                            className={`
+                    text-sm truncate flex-1
+                    ${hasUnread ? "text-gray-900 font-medium" : "text-gray-500"}
+                  `}
+                          >
+                            {chat.last_message.sender_type === "guest" && (
+                              <span className="text-gray-400">Bạn: </span>
+                            )}
+                            {chat.last_message.content}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Timestamp */}
+                      {chat.last_message && (
+                        <div className="text-xs text-gray-400 mt-1">
+                          {new Date(
+                            chat.last_message.created_at
+                          ).toLocaleTimeString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </List.Item>
-            )}
-          />
+              );
+            })}
+          </div>
         )}
       </div>
 
@@ -208,12 +345,12 @@ export default function GuestChat() {
             selectedMessages.length === 0 ? (
               <Empty description="Chưa có tin nhắn nào" />
             ) : (
-              selectedMessages.map((msg) => {
+              selectedMessages.map((msg, index) => {
                 const isGuest = msg.sender_type === "guest";
 
                 return (
                   <div
-                    key={msg.id}
+                    key={index}
                     className={`mb-4 p-3 rounded-lg max-w-xs flex ${
                       isGuest
                         ? "ml-auto bg-blue-100 flex-row-reverse"
@@ -225,15 +362,18 @@ export default function GuestChat() {
                     </div>
 
                     <div>
-                      {!isGuest && (
-                        <div className="text-xs font-semibold text-gray-600 mb-1">
-                          {msg.sender_name || "Nhân viên"}
-                        </div>
-                      )}
-                      <div className="text-sm text-gray-900">{msg.content}</div>
+                      <div className="text-sm text-gray-900 px-2">
+                        {msg.content}
+                      </div>
                       <div className="text-xs text-gray-500 mt-1">
                         {new Date(msg.created_at).toLocaleTimeString("vi-VN")}
                       </div>
+                      {msg.read_at && (
+                        <span className="text-xs text-gray-400">
+                          Đã xem lúc{" "}
+                          {new Date(msg.read_at).toLocaleTimeString("vi-VN")}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );

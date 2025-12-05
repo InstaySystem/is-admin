@@ -10,7 +10,7 @@ export default function VerifyOrderRoomPage() {
   const router = useRouter();
   const params = useParams();
   console.log(params);
-  const code = params?.code || "";
+  const code = params?.code?.toString();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export default function VerifyOrderRoomPage() {
         const res = await verifyOrderRoomAdmin(code);
         console.log(res);
         message.success("Xác nhận đơn phòng thành công!");
-        router.replace("/guest/guest-services");
+        router.replace("/guest");
       } catch (err: any) {
         message.error(
           err?.response?.data?.message || "Xác nhận đơn phòng thất bại!"

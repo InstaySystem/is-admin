@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import axiosRequest from "@/config/axios";
 
 export const getNotificationsForAdmin = () => {

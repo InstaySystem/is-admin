@@ -172,9 +172,11 @@ export default function EditServicePage() {
       const currentFiles = fileList;
       const newFiles = currentFiles.filter((f) => f.originFileObj);
       const existingFiles = currentFiles.filter((f) => f.id);
-      const originalIds = (originalData.images || []).map((img) => img.id);
+      const originalIds = (originalData.images || []).map((img: any) => img.id);
       const currentIds = existingFiles.map((img) => img.id);
-      const deleteImages = originalIds.filter((id) => !currentIds.includes(id));
+      const deleteImages = originalIds.filter(
+        (id: any) => !currentIds.includes(id)
+      );
 
       console.log("=== SUBMIT DEBUG ===");
       console.log("originalData.images:", originalData.images);
@@ -231,12 +233,11 @@ export default function EditServicePage() {
         }));
       }
 
-      // Handle update existing images
       if (existingFiles.length > 0) {
         const updatedExisting = existingFiles
           .map((f) => {
             const original = (originalData.images || []).find(
-              (img) => img.id === f.id
+              (img: any) => img.id === f.id
             );
             if (!original) return null;
 
@@ -395,7 +396,7 @@ export default function EditServicePage() {
               <ImagesUploader
                 fileList={fileList}
                 setFileList={setFileList}
-                setValue={setValue}
+                setValue={(field: string, value: any[]) => setValue(field as keyof FormValues, value)}
                 handlePreview={handlePreview}
               />
             )}

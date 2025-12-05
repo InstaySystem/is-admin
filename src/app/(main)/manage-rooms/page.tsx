@@ -6,7 +6,7 @@ import { Table, Space, Button, Input, Select } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { getFloors } from "@/apis/floor";
 import { getRooms, deleteRoom, createRoom, updateRoom } from "@/apis/room";
-import { getRoomTypes, getRoomTypesFilter } from "@/apis/room_type";
+import { getRoomTypesFilter } from "@/apis/room_type";
 import { Room, Floor, RoomType } from "@/types/room";
 import CustomAlert from "@/components/ui/CustomAlert";
 import CommonModal from "@/components/modals/CommonModal";

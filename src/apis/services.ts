@@ -42,6 +42,6 @@ export const deleteService = async (id: number) => {
   return await axiosRequest.delete(`/admin/services/${id}`);
 };
 
-export const getServicesBySlug = (slug: string) => {
+export const getServicesBySlug = (slug: string | undefined) => {
   return axiosRequest.get(`/services/${slug}`);
 };

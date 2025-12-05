@@ -3,7 +3,8 @@ import { OrderRoom } from "./order";
 export interface Booking {
   id: number;
   booking_number: string;
-  guest_name: string;
+  guest_full_name?: string;
+  guest_name?: string;
   guest_email?: string;
   guest_phone?: string;
   check_in: string;

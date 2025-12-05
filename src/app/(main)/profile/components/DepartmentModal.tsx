@@ -23,7 +23,6 @@ import { Department } from "@/types/user";
 import {
   updateDepartment,
   deleteDepartment,
-  getDepartments,
   getDepartmentsFilter,
 } from "@/apis/department";
 
@@ -70,11 +69,6 @@ export default function DepartmentModal({
     };
     fetchDepartments();
   }, []);
-
-  const handleChange = (field: keyof Department, value: string) => {
-    if (!dept) return;
-    setDept({ ...dept, [field]: value });
-  };
 
   const handleSelectDepartment = (deptId: number) => {
     const selected = allDepartments.find((d) => d.id === deptId);
