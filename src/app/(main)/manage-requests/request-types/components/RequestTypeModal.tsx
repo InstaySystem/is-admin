@@ -110,7 +110,7 @@ export default function RequestTypeModal({
                       onChange={(e) =>
                         setForm((s) => ({ ...s, name: e.target.value }))
                       }
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#608DBC] ${
+                      className={`outline-hidden w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#608DBC] ${
                         errors.name ? "border-red-400" : "border-gray-300"
                       }`}
                       placeholder="Nhập tên loại yêu cầu"
@@ -132,7 +132,7 @@ export default function RequestTypeModal({
                           department_id: Number(e.target.value),
                         }))
                       }
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#608DBC] ${
+                      className={`outline-hidden w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#608DBC] ${
                         errors.department_id
                           ? "border-red-400"
                           : "border-gray-300"

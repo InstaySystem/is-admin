@@ -115,7 +115,7 @@ export default function ServiceTypeModal({
             role="document"
           >
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden text-black">
-              <div className="text-center bg-[#608DBC] font-semibold text-lg py-4 text-black">
+              <div className="text-center bg-[#608DBC] font-semibold text-lg py-4 text-white">
                 {mode === "create"
                   ? "Thêm loại dịch vụ"
                   : "Chỉnh sửa loại dịch vụ"}
