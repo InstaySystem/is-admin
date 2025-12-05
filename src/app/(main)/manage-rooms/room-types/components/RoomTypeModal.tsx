@@ -79,7 +79,7 @@ export default function RoomTypeModal({
             exit={{ opacity: 0, y: 20, scale: 0.98 }}
           >
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden text-black">
-              <div className="text-center bg-[#608DBC] font-semibold text-lg py-4">
+              <div className="text-center bg-[#608DBC] font-semibold text-lg py-4 text-white">
                 {mode === "create" ? "Thêm loại phòng" : "Chỉnh sửa loại phòng"}
               </div>
 
@@ -96,7 +96,7 @@ export default function RoomTypeModal({
                       onChange={(e) =>
                         setForm((s) => ({ ...s, name: e.target.value }))
                       }
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#608DBC] ${
+                      className={`outline-hidden w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-[#608DBC] ${
                         errors.name ? "border-red-400" : "border-gray-300"
                       }`}
                       placeholder="Nhập tên loại phòng"

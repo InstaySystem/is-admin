@@ -219,6 +219,11 @@ export default function CreateUserPage() {
               render={({ field }) => (
                 <div className="flex items-center gap-3">
                   <Switch
+                    style={
+                      field.value
+                        ? { backgroundColor: "#608DBC", borderColor: "#608DBC" }
+                        : { backgroundColor: "#ccc", borderColor: "#ccc" }
+                    }
                     checked={field.value ?? false}
                     onChange={(checked) => field.onChange(checked)}
                   />
@@ -315,7 +320,12 @@ export default function CreateUserPage() {
         </div>
 
         <Form.Item className="mt-6">
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button
+            style={{ backgroundColor: "#608DBC", borderColor: "#608DBC" }}
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+          >
             Tạo người dùng
           </Button>
         </Form.Item>

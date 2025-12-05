@@ -1,19 +1,9 @@
 "use client";
 
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Box,
-  Typography,
-  Divider,
-} from "@mui/material";
-import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Department } from "@/types/user";
+import { FaTimes } from "react-icons/fa";
 
 type Mode = "create" | "edit" | "view";
 
@@ -42,24 +32,24 @@ export default function DepartmentPopUp({
     description: "",
   });
 
+  const firstInputRef = useRef<HTMLInputElement>(null);
   const isView = mode === "view";
-
   useEffect(() => {
     if (initialData && mode !== "create") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm({
         name: initialData.name || "",
         display_name: initialData.display_name || "",
         description: initialData.description || "",
       });
     } else {
-      setForm({
-        name: "",
-        display_name: "",
-        description: "",
-      });
+      setForm({ name: "", display_name: "", description: "" });
     }
-  }, [initialData, mode]);
+  }, [initialData, mode, open]);
+  useEffect(() => {
+    if (open && !isView) {
+      setTimeout(() => firstInputRef.current?.focus(), 150);
+    }
+  }, [open, isView]);
 
   const handleSave = () => {
     onOk({
@@ -70,122 +60,102 @@ export default function DepartmentPopUp({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        component: motion.div,
-        initial: { opacity: 0, y: -40, scale: 0.95 },
-        animate: { opacity: 1, y: 0, scale: 1 },
-        exit: { opacity: 0, y: 30, scale: 0.95 },
-        transition: { duration: 0.25 },
-        sx: { borderRadius: 3, overflow: "hidden", boxShadow: 6 },
-      }}
-    >
-      {/* Header */}
-      <DialogTitle
-        sx={{
-          bgcolor: "#608DBC",
-          color: "white",
-          textAlign: "center",
-          fontWeight: 700,
-          fontSize: "1.25rem",
-          py: 2,
-        }}
-      >
-        {mode === "create" && "Thêm phòng ban"}
-        {mode === "edit" && "Chỉnh sửa phòng ban"}
-        {mode === "view" && "Thông tin phòng ban"}
-      </DialogTitle>
-
-      {/* Content */}
-      <DialogContent sx={{ p: 3 }}>
-        <Box
-          sx={{
-            p: 3,
-            bgcolor: "grey.50",
-            borderRadius: 2,
-            boxShadow: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-          }}
-        >
-          <Typography fontWeight={600} fontSize="1rem">
-            Thông tin phòng ban
-          </Typography>
-
-          <TextField
-            label="Tên phòng ban"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            fullWidth
-            disabled={isView}
+    <AnimatePresence>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 text-black">
+          <motion.div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
           />
-
-          <TextField
-            label="Tên hiển thị"
-            value={form.display_name}
-            onChange={(e) => setForm({ ...form, display_name: e.target.value })}
-            fullWidth
-            disabled={isView}
-          />
-
-          <TextField
-            label="Mô tả"
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            multiline
-            minRows={3}
-            fullWidth
-            disabled={isView}
-          />
-        </Box>
-      </DialogContent>
-
-      <Divider />
-
-      {/* Actions */}
-      <DialogActions
-        sx={{
-          justifyContent: "space-between",
-          px: 4,
-          py: 2,
-        }}
-      >
-        <Button
-          variant="outlined"
-          onClick={onClose}
-          sx={{
-            borderRadius: 2,
-            px: 4,
-            textTransform: "none",
-            color: "grey.700",
-            borderColor: "grey.400",
-            "&:hover": { borderColor: "grey.600" },
-          }}
-        >
-          Đóng
-        </Button>
-
-        {mode !== "view" && (
-          <Button
-            variant="contained"
-            onClick={handleSave}
-            sx={{
-              borderRadius: 2,
-              px: 4,
-              textTransform: "none",
-              bgcolor: "#608DBC",
-              "&:hover": { bgcolor: "#4a7bb0" },
-            }}
+          <motion.div
+            className="relative z-10 w-full max-w-lg bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col"
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
           >
-            {mode === "edit" ? "Cập nhật" : "Tạo mới"}
-          </Button>
-        )}
-      </DialogActions>
-    </Dialog>
+            <div className="bg-[#608DBC] px-6 py-4 flex justify-between items-center text-white">
+              <h3 className="text-lg font-bold">
+                {mode === "create" && "Thêm phòng ban"}
+                {mode === "edit" && "Chỉnh sửa phòng ban"}
+                {mode === "view" && "Chi tiết phòng ban"}
+              </h3>
+              <button
+                onClick={onClose}
+                className="hover:bg-white/20 p-1 rounded-full transition"
+              >
+                <FaTimes size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Tên phòng ban <span className="text-red-500">*</span>
+                </label>
+                <input
+                  ref={firstInputRef}
+                  type="text"
+                  disabled={isView}
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder="Nhập tên phòng ban..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#608DBC] disabled:bg-gray-100 disabled:text-gray-500 transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Tên hiển thị
+                </label>
+                <input
+                  type="text"
+                  disabled={isView}
+                  value={form.display_name}
+                  onChange={(e) =>
+                    setForm({ ...form, display_name: e.target.value })
+                  }
+                  placeholder="Nhập tên hiển thị..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#608DBC] disabled:bg-gray-100 disabled:text-gray-500 transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  Mô tả
+                </label>
+                <textarea
+                  rows={4}
+                  disabled={isView}
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
+                  placeholder="Mô tả chi tiết..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#608DBC] disabled:bg-gray-100 disabled:text-gray-500 resize-none transition"
+                />
+              </div>
+            </div>
+            <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-100">
+              <button
+                onClick={onClose}
+                className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition font-medium"
+              >
+                Đóng
+              </button>
+
+              {!isView && (
+                <button
+                  onClick={handleSave}
+                  className="px-5 py-2 rounded-lg bg-[#608DBC] text-white hover:bg-[#4a7bb0] transition font-medium shadow-md"
+                >
+                  {mode === "create" ? "Tạo mới" : "Cập nhật"}
+                </button>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }

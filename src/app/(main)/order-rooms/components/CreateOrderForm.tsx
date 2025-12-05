@@ -113,6 +113,7 @@ export default function CreateOrderForm() {
         className="w-full"
         onClick={handleCreate}
         loading={loading}
+        style={{background: "#608DBC"}}
       >
         Tạo đơn phòng
       </Button>
