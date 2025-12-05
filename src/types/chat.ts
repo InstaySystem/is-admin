@@ -14,6 +14,8 @@ export interface Chat {
 }
 
 export interface ChatMessage {
+  is_read: boolean;
+  last_reader_type: string;
   reader_type: any;
   read_at: any;
   id: string;

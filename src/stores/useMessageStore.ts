@@ -1,113 +1,191 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
-import { Chat, ChatMessage } from "@/types/chat";
+
+interface Message {
+  id: string;
+  chat_id: string;
+  sender_id: string;
+  sender_name: string;
+  sender_type: "guest" | "staff";
+  content: string;
+  created_at: string;
+  read_by?: string[];
+  read_at?: string;
+  reader_type?: string;
+  last_reader_type?: string;
+  is_read?: boolean;
+  [key: string]: any;
+}
+
+interface Chat {
+  id: string;
+  name: string;
+  code?: string;
+  department_id?: number;
+  receiver_id?: number;
+  department?: any;
+  order_room?: any;
+  last_message?: {
+    id: string;
+    content: string;
+    sender_type: "guest" | "staff";
+    created_at: string;
+    is_read?: boolean;
+    read_at?: string;
+    reader_type?: string;
+  };
+}
 
 interface MessageStore {
   chats: Chat[];
-  messages: Record<string, ChatMessage[]>;
-  currentUserId: string | null;
-  currentUserType: "guest" | "staff" | null;
+  messages: Record<string, Message[]>;
+  currentUser: { id: string; role: string } | null;
+  selectedChatId: null;
+  setSelectedChatId: (id: any) => void;
+  isHaveNewMessage: boolean;
+  setIsHaveNewMessage: (isHaveNewMessage: boolean) => void;
 
-  setChats: (chats: Chat[]) => void;
   addOrUpdateChat: (chat: Chat) => void;
-  removeChatTempId: (tempId: string, realChat: Chat) => void;
-
-  addMessage: (chatId: string, msg: ChatMessage) => void;
-  updateTempMessage: (
+  addMessage: (chatId: string, message: Message) => void;
+  updateMessage: (
     chatId: string,
-    tempId: string,
-    realMsg: ChatMessage
+    messageId: string,
+    updatedMessage: Partial<Message>
   ) => void;
-  markRead: (chatId: any, readerId: any, readerType: any, readAt: any) => void;
-  loadMessages: (chatId: string, messages: ChatMessage[]) => void;
-
-  setCurrentUser: (userId: string, userType: "guest" | "staff") => void;
+  loadMessages: (chatId: string, messages: Message[]) => void;
+  markRead: (
+    chatId: string,
+    readerId: string,
+    readerType: string,
+    readAt: string
+  ) => void;
+  setCurrentUser: (id: string, role: string) => void;
+  clearMessages: () => void;
 }
 
-export const useMessageStore = create<MessageStore>((set, get) => ({
+export const useMessageStore = create<MessageStore>((set) => ({
   chats: [],
   messages: {},
-  currentUserId: null,
-  currentUserType: null,
+  currentUser: null,
+  selectedChatId: null,
+  isHaveNewMessage: false,
 
-  setChats: (chats) => set({ chats }),
+  setIsHaveNewMessage: (isHaveNewMessage: boolean) => {
+    set({ isHaveNewMessage: isHaveNewMessage });
+  },
 
-  addOrUpdateChat: (chat) =>
+  setSelectedChatId: (id) => {
+    set({ selectedChatId: id });
+  },
+
+  addOrUpdateChat: (chat: Chat) => {
     set((state) => {
-      const exists = state.chats.find((c) => c.id === chat.id);
+      const existingIndex = state.chats.findIndex((c) => c.id === chat.id);
+      const updated = [...state.chats];
 
-      const newChats = exists
-        ? state.chats.map((c) => (c.id === chat.id ? { ...c, ...chat } : c))
-        : [chat, ...state.chats];
+      if (existingIndex !== -1) {
+        updated[existingIndex] = { ...updated[existingIndex], ...chat };
+      } else {
+        updated.push(chat);
+      }
 
-      return { chats: newChats };
-    }),
+      updated.sort((a, b) => {
+        const timeA = a.last_message?.created_at
+          ? new Date(a.last_message.created_at).getTime()
+          : 0;
+        const timeB = b.last_message?.created_at
+          ? new Date(b.last_message.created_at).getTime()
+          : 0;
+        return timeB - timeA;
+      });
 
-  removeChatTempId: (tempId, realChat) =>
-    set((state) => {
-      const messages = state.messages[tempId] || [];
+      return { chats: updated };
+    });
+  },
 
-      return {
-        chats: state.chats.filter((c) => c.id !== tempId),
-        messages: {
-          ...state.messages,
-          [realChat.id]: messages,
-        },
-      };
-    }),
-
-  addMessage: (chatId, msg) =>
+  addMessage: (chatId: string, message: Message) => {
     set((state) => {
       const existing = state.messages[chatId] || [];
+      const messageExists = existing.some((m) => m.id === message.id);
 
-      if (existing.some((m) => m.id === msg.id)) {
+      if (messageExists) {
         return state;
       }
 
       return {
         messages: {
           ...state.messages,
-          [chatId]: [...existing, msg],
+          [chatId]: [...existing, message],
         },
       };
-    }),
+    });
+  },
 
-  updateTempMessage: (chatId, tempId, realMsg) =>
-    set((state) => ({
-      messages: {
-        ...state.messages,
-        [chatId]: (state.messages[chatId] || []).map((m) =>
-          m.id === tempId ? realMsg : m
-        ),
-      },
-    })),
+  // 🔥 Cập nhật message có sẵn
+  updateMessage: (
+    chatId: string,
+    messageId: string,
+    updatedMessage: Partial<Message>
+  ) => {
+    set((state) => {
+      const messages = state.messages[chatId] || [];
+      const updated = messages.map((msg) =>
+        msg.id === messageId ? { ...msg, ...updatedMessage } : msg
+      );
 
-  markRead: (chatId, readerId, readerType, readAt) =>
-    set((state) => ({
-      messages: {
-        ...state.messages,
-        [chatId]: (state.messages[chatId] || []).map((m) => {
-          const alreadyRead = m.read_by?.includes(readerId);
+      return {
+        messages: {
+          ...state.messages,
+          [chatId]: updated,
+        },
+      };
+    });
+  },
 
-          return {
-            ...m,
-            read_by: alreadyRead ? m.read_by : [...(m.read_by || []), readerId],
-
-            read_at: readAt || m.read_at,
-            last_reader_type: readerType || m.reader_type,
-          };
-        }),
-      },
-    })),
-
-  loadMessages: (chatId, messages) =>
+  loadMessages: (chatId: string, messages: Message[]) => {
     set((state) => ({
       messages: {
         ...state.messages,
         [chatId]: messages,
       },
-    })),
+    }));
+  },
 
-  setCurrentUser: (userId, userType) =>
-    set({ currentUserId: userId, currentUserType: userType }),
+  markRead: (
+    chatId: string,
+    readerId: string,
+    readerType: string,
+    readAt: string
+  ) => {
+    set((state) => {
+      const messages = state.messages[chatId] || [];
+      const updated = messages.map((msg) => {
+        if (msg.sender_type !== readerType) {
+          return {
+            ...msg,
+            is_read: true,
+            read_by: Array.from(new Set([...(msg.read_by || []), readerType])),
+            read_at: readAt,
+            reader_type: readerType,
+          };
+        }
+        return msg;
+      });
+
+      return {
+        messages: {
+          ...state.messages,
+          [chatId]: updated,
+        },
+      };
+    });
+  },
+
+  setCurrentUser: (id: string, role: string) => {
+    set({ currentUser: { id, role } });
+  },
+
+  clearMessages: () => {
+    set({ messages: {}, chats: [] });
+  },
 }));

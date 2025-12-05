@@ -7,6 +7,7 @@ interface AppState {
   _role: string | null;
   setUser: (user: User) => void;
   clearUser: () => void;
+  setRole: (role: string) => void;
 
   urlQrcode: string;
   setUrlQrCode: (url: string) => void;
@@ -29,6 +30,10 @@ export const useAppStore = create<AppState>()(
     (set) => ({
       user: null,
       _role: null,
+
+      setRole: (role: string) => {
+        set({ _role: role });
+      },
 
       setUser: (user: User) => {
         set({

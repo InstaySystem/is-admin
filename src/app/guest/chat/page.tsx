@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Button, Input, List, Modal, message, Select, Empty } from "antd";
+import { Button, Input, Modal, message, Select, Empty } from "antd";
 import { useWS } from "@/app/providers/WSProvider";
 import { useMessageStore } from "@/stores/useMessageStore";
 import { getChatsForGuest, getChatByIdForGuest } from "@/apis/chat";
 import { getDepartmentsFilter } from "@/apis/department";
 import { Department } from "@/types/user";
 import { Chat } from "@/types/chat";
+import { useAppStore } from "@/stores/useAppStore";
 
 export default function GuestChat() {
   const { sendWS, isConnected } = useWS();
@@ -15,8 +16,8 @@ export default function GuestChat() {
   const messagesMap = useMessageStore((s) => s.messages);
   const addOrUpdateChat = useMessageStore((s) => s.addOrUpdateChat);
   const addMessage = useMessageStore((s) => s.addMessage);
-  const markRead = useMessageStore((s) => s.markRead);
   const setCurrentUser = useMessageStore((s) => s.setCurrentUser);
+  const { _role, setRole } = useAppStore();
 
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -26,6 +27,11 @@ export default function GuestChat() {
   const [loading, setLoading] = useState(false);
 
   const messageEndRef = useRef<HTMLDivElement>(null);
+  const hasInitialized = useRef(false);
+
+  useEffect(() => {
+    setRole("guest");
+  }, []);
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -35,44 +41,24 @@ export default function GuestChat() {
     setCurrentUser("guest-user", "guest");
   }, [setCurrentUser]);
 
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const res = await getChatsForGuest();
-        if (res.data?.data?.chats) {
-          res.data.data.chats.forEach((c: any) => addOrUpdateChat(c));
-        }
-      } catch (err) {
-        console.error("Lỗi tải chat:", err);
-        message.error("Không tải được phòng chat cũ");
+  const fetchChats = async () => {
+    try {
+      const res = await getChatsForGuest();
+      if (res.data?.data?.chats) {
+        res.data.data.chats.forEach((c: any) => addOrUpdateChat(c));
       }
-    };
-    fetchChats();
-  }, [addOrUpdateChat]);
+    } catch (err) {
+      console.error("Lỗi tải chat:", err);
+      message.error("Không tải được phòng chat cũ");
+    }
+  };
 
   useEffect(() => {
-    if (selectedChatId && messagesMap[selectedChatId]) {
-      const messages = messagesMap[selectedChatId];
-      if (messages.length > 0) {
-        const lastMsg = messages[messages.length - 1];
-        const currentChat = chats.find((c) => c.id === selectedChatId);
-        if (currentChat) {
-          addOrUpdateChat({
-            ...currentChat,
-            last_message: {
-              id: lastMsg.id,
-              content: lastMsg.content,
-              sender_type: lastMsg.sender_type,
-              created_at: lastMsg.created_at,
-              is_read:
-                lastMsg.read_by?.includes("guest") ||
-                lastMsg.sender_type === "guest",
-            },
-          });
-        }
-      }
-    }
-  }, [messagesMap, selectedChatId]);
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    fetchChats();
+  }, []);
 
   const handleNewChat = async () => {
     try {
@@ -118,9 +104,56 @@ export default function GuestChat() {
 
     sendWS("send_message", payload);
 
-    const currentChatId = selectedChatId || newReceiverID?.toString();
-    if (currentChatId) {
-      const currentChat = chats.find((c) => c.id === currentChatId);
+    if (!selectedChatId && newReceiverID) {
+      const dep = departments.find((d) => d.id === newReceiverID);
+      const tempChatId = `temp_${newReceiverID}_${Date.now()}`;
+      const chatId = `${newReceiverID.toString()}`;
+      const now = new Date().toISOString();
+
+      const newMessageData = {
+        id: Date.now().toString(),
+        chat_id: tempChatId,
+        sender_id: "guest",
+        sender_name: "Bạn",
+        sender_type: "guest",
+        content: messageContent,
+        created_at: now,
+        read_by: ["guest"],
+        read_at: "null",
+        reader_type: "staff",
+        last_reader_type: "staff",
+        is_read: false,
+      };
+
+      sendWS("new_message", {
+        id: tempChatId,
+        name: dep?.display_name || "Phòng mới",
+        code: `${newReceiverID}`,
+        department_id: dep?.id,
+        receiver_id: dep?.id,
+        department: dep,
+        order_room: null,
+        last_message: {
+          id: newMessageData.id,
+          sender_id: "guest",
+          sender_name: "Bạn",
+          sender_type: "guest",
+          content: messageContent,
+          created_at: now,
+          read_by: ["guest"],
+        },
+        staff_read: {
+          read_at: null,
+        },
+        last_reader_type: null,
+        is_read: false,
+      });
+
+      setSelectedChatId(chatId);
+      setNewChatModalOpen(false);
+      setNewReceiverID(null);
+    } else if (selectedChatId) {
+      const currentChat = chats.find((c) => c.id === selectedChatId);
       if (currentChat) {
         addOrUpdateChat({
           ...currentChat,
@@ -136,31 +169,6 @@ export default function GuestChat() {
     }
 
     setMessageContent("");
-
-    if (!selectedChatId && newReceiverID) {
-      const dep = departments.find((d) => d.id === newReceiverID);
-      const tempChatId = newReceiverID.toString();
-
-      const newChat: Chat = {
-        id: tempChatId,
-        name: dep?.display_name || "Phòng mới",
-        department_id: dep?.id,
-        receiver_id: dep?.id,
-        code: `${newReceiverID}`,
-        last_message: {
-          id: Date.now().toString(),
-          content: messageContent,
-          sender_type: "guest",
-          created_at: new Date().toISOString(),
-          is_read: true,
-        },
-      };
-
-      addOrUpdateChat(newChat);
-      setSelectedChatId(tempChatId);
-      setNewChatModalOpen(false);
-      setNewReceiverID(null);
-    }
   };
 
   const selectedMessages = selectedChatId
@@ -188,6 +196,8 @@ export default function GuestChat() {
             image_key: msg.image_key,
             read_at: msg.read_at,
             reader_type: msg.reader_type,
+            last_reader_type: msg.last_reader_type,
+            is_read: msg.is_read,
           });
         });
 
@@ -195,6 +205,11 @@ export default function GuestChat() {
           const lastMsg = messages[messages.length - 1];
           const currentChat = chats.find((c) => c.id === chatId);
           if (currentChat) {
+            const isRead =
+              lastMsg.sender_type === "guest" ||
+              lastMsg.is_read ||
+              lastMsg.reader_type === "guest";
+
             addOrUpdateChat({
               ...currentChat,
               last_message: {
@@ -202,7 +217,9 @@ export default function GuestChat() {
                 content: lastMsg.content,
                 sender_type: lastMsg.sender_type,
                 created_at: lastMsg.created_at,
-                is_read: lastMsg.is_read,
+                is_read: isRead,
+                read_at: lastMsg.read_at,
+                reader_type: lastMsg.reader_type,
               },
             });
           }
@@ -220,14 +237,7 @@ export default function GuestChat() {
 
   const handleSelectChat = async (chatId: string, code: string | undefined) => {
     setSelectedChatId(chatId);
-
     await loadMessagesForChat(code, chatId);
-    if (isConnected) {
-      sendWS("mark_read", {
-        chat_id: chatId,
-      });
-    }
-
   };
 
   return (
@@ -253,7 +263,7 @@ export default function GuestChat() {
             />
           </div>
         ) : (
-          <div className="py-2">
+          <div className="py-2 overflow-y-auto">
             {chats.map((chat) => {
               const isSelected = selectedChatId === chat.id;
               const hasUnread =
@@ -286,7 +296,6 @@ export default function GuestChat() {
                         ?.toUpperCase() || "?"}
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-1">
                         <h3
@@ -319,7 +328,6 @@ export default function GuestChat() {
                         </div>
                       )}
 
-                      {/* Timestamp */}
                       {chat.last_message && (
                         <div className="text-xs text-gray-400 mt-1">
                           {new Date(
@@ -345,35 +353,47 @@ export default function GuestChat() {
             selectedMessages.length === 0 ? (
               <Empty description="Chưa có tin nhắn nào" />
             ) : (
-              selectedMessages.map((msg, index) => {
+              selectedMessages.map((msg) => {
                 const isGuest = msg.sender_type === "guest";
+
+                // 🔥 Check đã đọc: nếu là tin nhắn guest và có is_read hoặc staff trong read_by
+                const isReadByStaff =
+                  isGuest && (msg.is_read || msg.read_by?.includes("staff"));
 
                 return (
                   <div
-                    key={index}
+                    key={msg.id}
                     className={`mb-4 p-3 rounded-lg max-w-xs flex ${
-                      isGuest
+                      msg.sender_type === "guest"
                         ? "ml-auto bg-blue-100 flex-row-reverse"
                         : "bg-white border border-gray-200"
                     }`}
                   >
                     <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-white mr-2">
-                      {isGuest ? "GU" : "ST"}
+                      {msg.sender_type === "guest" ? "GU" : "ST"}
                     </div>
 
                     <div>
                       <div className="text-sm text-gray-900 px-2">
                         {msg.content}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {new Date(msg.created_at).toLocaleTimeString("vi-VN")}
-                      </div>
-                      {msg.read_at && (
-                        <span className="text-xs text-gray-400">
-                          Đã xem lúc{" "}
-                          {new Date(msg.read_at).toLocaleTimeString("vi-VN")}
+                      <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                        <span>
+                          {new Date(msg.created_at).toLocaleTimeString("vi-VN")}
                         </span>
-                      )}
+
+                        {msg.sender_type === "guest" && (
+                          <>
+                            {isReadByStaff ? (
+                              <span className="text-blue-500 font-medium">
+                                ✔✔ Đã xem
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">✔ Đã gửi</span>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

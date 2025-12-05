@@ -14,7 +14,7 @@ export default function AdminChatPage() {
   const loadMessages = useMessageStore((s) => s.loadMessages);
   const setCurrentUser = useMessageStore((s) => s.setCurrentUser);
 
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const { selectedChatId, setSelectedChatId } = useMessageStore();
   const [messageContent, setMessageContent] = useState("");
   const messageEndRef = useRef<HTMLDivElement>(null);
 
@@ -26,18 +26,19 @@ export default function AdminChatPage() {
     setCurrentUser("staff-user", "staff");
   }, [setCurrentUser]);
 
-  useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const res = await getChatsForAdmin();
-        if (res.data?.data?.chats) {
-          res.data.data.chats.forEach((c: any) => addOrUpdateChat(c));
-        }
-      } catch (err) {
-        console.error("Lỗi tải chat:", err);
-        message.error("Không tải được danh sách phòng chat");
+  const fetchChats = async () => {
+    try {
+      const res = await getChatsForAdmin();
+      if (res.data?.data?.chats) {
+        res.data.data.chats.forEach((c: any) => addOrUpdateChat(c));
       }
-    };
+    } catch (err) {
+      console.error("Lỗi tải chat:", err);
+      message.error("Không tải được danh sách phòng chat");
+    }
+  };
+
+  useEffect(() => {
     fetchChats();
   }, [addOrUpdateChat]);
 
@@ -49,6 +50,11 @@ export default function AdminChatPage() {
         const currentChat = chats.find((c) => c.id === selectedChatId);
 
         if (currentChat && currentChat.last_message?.id !== lastMsg.id) {
+          const isRead =
+            lastMsg.sender_type === "staff" ||
+            lastMsg.read_by?.includes("staff") ||
+            lastMsg.reader_type === "staff";
+
           addOrUpdateChat({
             ...currentChat,
             last_message: {
@@ -56,16 +62,15 @@ export default function AdminChatPage() {
               content: lastMsg.content,
               sender_type: lastMsg.sender_type,
               created_at: lastMsg.created_at,
-              is_read:
-                lastMsg.read_by?.includes("staff") ||
-                lastMsg.sender_type === "staff",
+              is_read: isRead,
+              read_at: lastMsg.read_at,
+              reader_type: lastMsg.reader_type,
             },
           });
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messagesMap, selectedChatId]);
+  }, [messagesMap, selectedChatId, chats, addOrUpdateChat]);
 
   const handleSelectChat = async (chatId: string) => {
     setSelectedChatId(chatId);
@@ -76,11 +81,13 @@ export default function AdminChatPage() {
         const messages = res.data.data.chat.messages;
         loadMessages(chatId, messages);
 
-        // Update last_message cho chat
         if (messages.length > 0) {
           const lastMsg = messages[messages.length - 1];
           const currentChat = chats.find((c) => c.id === chatId);
           if (currentChat) {
+            const isStaff = lastMsg.sender_type === "staff";
+            const isRead = !isStaff && !lastMsg.is_read;
+
             addOrUpdateChat({
               ...currentChat,
               last_message: {
@@ -88,8 +95,9 @@ export default function AdminChatPage() {
                 content: lastMsg.content,
                 sender_type: lastMsg.sender_type,
                 created_at: lastMsg.created_at,
-                is_read:
-                  lastMsg.sender_type === "staff" || !!lastMsg.staff_read,
+                is_read: isRead,
+                read_at: lastMsg.read_at,
+                reader_type: lastMsg.reader_type,
               },
             });
           }
@@ -130,7 +138,6 @@ export default function AdminChatPage() {
 
     sendWS("send_message", payload);
 
-    // Update last_message cho chat hiện tại
     const currentChat = chats.find((c) => c.id === selectedChatId);
     if (currentChat) {
       addOrUpdateChat({
@@ -278,7 +285,6 @@ export default function AdminChatPage() {
         </div>
       </div>
 
-      {/* Chat Area */}
       <div className="flex-1 flex flex-col p-4 bg-white">
         <div className="flex-1 border border-gray-200 rounded-lg p-4 mb-4 overflow-y-auto bg-gray-50">
           {selectedChatId ? (
@@ -288,21 +294,23 @@ export default function AdminChatPage() {
               selectedMessages.map((msg) => {
                 const isStaff = msg.sender_type === "staff";
 
+                const isReadByGuest = isStaff || msg.is_read;
+
                 return (
                   <div
                     key={msg.id}
                     className={`mb-4 p-3 rounded-lg max-w-xs flex ${
-                      isStaff
+                      msg.sender_type === "staff"
                         ? "ml-auto bg-blue-100 flex-row-reverse"
                         : "bg-white border border-gray-200"
                     }`}
                   >
                     <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-white mr-2">
-                      {isStaff ? "ST" : "GU"}
+                      {msg.sender_type === "staff" ? "ST" : "GU"}
                     </div>
 
                     <div>
-                      {!isStaff && (
+                      {msg.sender_type !== "staff" && (
                         <div className="text-xs font-semibold text-gray-600 mb-1">
                           {msg.sender_name || "Khách"}
                         </div>
@@ -313,13 +321,17 @@ export default function AdminChatPage() {
                           {new Date(msg.created_at).toLocaleTimeString("vi-VN")}
                         </span>
 
-                        {msg.sender_type === "staff" &&
-                          msg.reader_type === "guest" &&
-                          msg.read_at && (
-                            <span className="text-blue-500 font-medium">
-                              ✔ Đã xem
-                            </span>
-                          )}
+                        {msg.sender_type === "staff" && (
+                          <>
+                            {isReadByGuest ? (
+                              <span className="text-blue-500 font-medium">
+                                ✔✔ Đã xem
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">✔ Đã gửi</span>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

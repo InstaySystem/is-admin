@@ -11,6 +11,8 @@ import React, {
 import { message } from "antd";
 import { useMessageStore } from "@/stores/useMessageStore";
 import { useAppStore } from "@/stores/useAppStore";
+import { getChatsForGuest } from "@/apis/chat";
+import { getChatsForAdmin } from "@/apis/chat";
 
 interface WSContextProps {
   sendWS: (event: string, data: any) => void;
@@ -33,7 +35,8 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { chats, addMessage, addOrUpdateChat, markRead } = useMessageStore();
+  const { chats, addMessage, addOrUpdateChat, markRead, setIsHaveNewMessage } =
+    useMessageStore();
   const [msgApi, contextHolder] = message.useMessage();
   const role = useAppStore((s) => s._role);
 
@@ -93,18 +96,66 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const handleWSMessage = (res: any) => {
+  const handleWSMessage = async (res: any) => {
+    const currentRole = useAppStore.getState()._role;
+
     switch (res.event) {
       case "new_message": {
         if (!res.data) return;
 
-        const chatId = res.data.chatId || res.data.chat_id;
+        setIsHaveNewMessage(true);
+
+        console.log("new message data:", res);
+
+        const chatId = res.data.chat_id;
 
         addMessage(chatId, res.data);
 
         const currentChat = chats.find((c) => c.id === chatId);
+        const selectedChatId = useMessageStore.getState().selectedChatId;
 
-        if (currentChat) {
+        if (role?.startsWith("staff")) {
+          try {
+            const resChats = await getChatsForAdmin();
+            if (resChats.data?.data?.chats) {
+              resChats.data.data.chats.forEach((c: any) => addOrUpdateChat(c));
+            }
+          } catch (err) {
+            console.error("❌ Lỗi fetch chats guest:", err);
+          }
+        } else {
+          try {
+            const resChats = await getChatsForGuest();
+            if (resChats.data?.data?.chats) {
+              resChats.data.data.chats.forEach((c: any) => addOrUpdateChat(c));
+            }
+          } catch (err) {
+            console.error("❌ Lỗi fetch chats admin:", err);
+          }
+        }
+
+        const isAdminOpeningThisRoom = selectedChatId === chatId;
+
+        const isRead =
+          res.data.sender_type === currentRole ||
+          res.data.read_by?.includes(currentRole) ||
+          isAdminOpeningThisRoom;
+
+        if (!currentChat) {
+          const newChat = {
+            id: chatId,
+            name: res.data.sender_type || "",
+            last_message: {
+              id: res.data.id,
+              content: res.data.content,
+              sender_type: res.data.sender_type,
+              created_at: res.data.created_at,
+              is_read: isRead,
+            },
+          };
+
+          addOrUpdateChat(newChat);
+        } else {
           addOrUpdateChat({
             ...currentChat,
             last_message: {
@@ -112,55 +163,47 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
               content: res.data.content,
               sender_type: res.data.sender_type,
               created_at: res.data.created_at,
-              is_read:
-                res.data.sender_type === "staff" ||
-                res.data.read_by?.includes("staff"),
+              is_read: isRead,
             },
           });
         }
 
+        if (isAdminOpeningThisRoom && wsRef.current) {
+          const payload = {
+            event: "mark_read",
+            data: {
+              chat_id: chatId,
+            },
+            timestamp: Date.now(),
+          };
+
+          wsRef.current.send(JSON.stringify(payload));
+          console.log("✅ Auto mark_read sent:", chatId);
+        }
+
         break;
       }
-
-      case "chat_updated":
-        if (res.data) addOrUpdateChat(res.data);
-        break;
 
       case "mark_read": {
         console.log("✅ mark_read:", res.data);
 
         const { chat_id, reader_id, reader_type, read_at } = res.data || {};
 
-        if (!chat_id || !reader_id) return;
+        if (!chat_id) return;
 
         markRead(
-          chat_id.toString(),
-          reader_id.toString(),
-          reader_type.toString(),
-          read_at.toString()
+          chat_id,
+          reader_id,
+          reader_type,
+          read_at || new Date().toISOString()
         );
-
-        const store = useMessageStore.getState();
-        const chats = store.chats;
-        const currentChat = chats.find((c) => c.id === chat_id.toString());
-
-        if (currentChat?.last_message) {
-          addOrUpdateChat({
-            ...currentChat,
-            last_message: {
-              ...currentChat.last_message,
-              is_read: true,
-              read_at: read_at || currentChat.last_message.read_at,
-              read_by: reader_type || "Anonymous",
-            },
-          });
-        }
 
         break;
       }
 
       case "error":
-        msgApi.error(res.data?.message || "Lỗi không xác định");
+        // msgApi.error(res.data?.message || "Lỗi không xác định");
+        console.log(res);
         break;
 
       default:
