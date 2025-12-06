@@ -26,3 +26,7 @@ export const getOrderRoomById = (id: number) => {
 export const getOrderServiceByCode = (code: number) => {
   return axiosRequest.get(`/orders/services/${code}`);
 };
+
+export const getOrderSchedule = () => {
+  return axiosRequest.get("/admin/rooms/order-rooms");
+};
