@@ -2,23 +2,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Input, InputNumber, Select, Form, Button, Modal } from "antd";
+import { InputNumber, Form, Button, Modal, Input } from "antd";
 import { useParams, useRouter } from "next/navigation";
 import CustomAlert from "@/components/ui/CustomAlert";
-import ImagesUploader from "@/app/(main)/manage-services/components/ImagesUploader";
 import { getServicesBySlug } from "@/apis/services";
 import { generateViewPresignedUrls } from "@/apis/file";
-import { ServiceType } from "@/types/service";
 import { createOrderService } from "@/apis/order_room";
-
-interface FormValues {
-  name: string;
-  price: number;
-  slug?: string;
-  is_active: boolean;
-  service_type_id?: number;
-  images: any[];
-}
+import Image from "next/image";
 
 interface OrderServiceFormValues {
   quantity: number;
@@ -26,7 +16,6 @@ interface OrderServiceFormValues {
 }
 
 export default function DetailGuestServicePage() {
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [alert, setAlert] = useState({
     open: false,
     type: "success" as "success" | "error" | "info" | "warning",
@@ -46,16 +35,6 @@ export default function DetailGuestServicePage() {
     setAlert({ open: true, type, message });
   };
 
-  const { control, setValue, reset } = useForm<FormValues>({
-    defaultValues: {
-      name: "",
-      price: 0,
-      is_active: true,
-      service_type_id: undefined,
-      images: [],
-    },
-  });
-
   const { control: orderControl, handleSubmit: handleOrderSubmit } =
     useForm<OrderServiceFormValues>({
       defaultValues: { quantity: 1, guest_note: "" },
@@ -66,14 +45,6 @@ export default function DetailGuestServicePage() {
       try {
         const res = await getServicesBySlug(serviceSlug);
         const service = res.data.data.service;
-
-        reset({
-          name: service.name,
-          price: service.price,
-          is_active: service.is_active,
-          service_type_id: service.service_type?.id,
-        });
-
         setOriginalData(service);
 
         if (service.images?.length) {
@@ -92,14 +63,17 @@ export default function DetailGuestServicePage() {
             sort_order: img.sort_order,
           }));
 
-          setFileList(mapped);
-          setValue("images", mapped);
+          const sorted = mapped.sort(
+            (a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0)
+          );
+
+          setFileList(sorted);
         }
       } catch (err) {
         console.error(err);
       }
     })();
-  }, [serviceSlug, reset, setValue]);
+  }, [serviceSlug]);
 
   const handlePlaceOrder = () => {
     setIsModalOpen(true);
@@ -126,79 +100,82 @@ export default function DetailGuestServicePage() {
     }
   };
 
+  if (!originalData) {
+    return (
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8 mt-6">
+        <p className="text-center text-gray-500">Đang tải...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-8 mt-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">
         Chi tiết dịch vụ
       </h2>
-      <Form layout="vertical">
-        <div className="grid grid-cols-2 gap-6">
-          <Form.Item label="Tên dịch vụ">
-            <Controller
-              name="name"
-              control={control}
-              disabled
-              render={({ field }) => <Input {...field} disabled />}
-            />
-          </Form.Item>
 
-          <Form.Item label="Giá dịch vụ">
-            <Controller
-              name="price"
-              control={control}
-              disabled
-              render={({ field }) => (
-                <InputNumber {...field} disabled className="w-full" />
-              )}
-            />
-          </Form.Item>
+      <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Tên dịch vụ
+          </label>
+          <p className="text-lg text-gray-900">{originalData.name}</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-6 mt-6">
-          <Form.Item label="Loại dịch vụ">
-            <Controller
-              name="service_type_id"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  disabled
-                  placeholder="Chọn loại dịch vụ"
-                  options={serviceTypes.map((st) => ({
-                    label: st.name,
-                    value: st.id,
-                  }))}
-                />
-              )}
-            />
-          </Form.Item>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Giá dịch vụ
+            </label>
+            <p className="text-lg text-gray-900 font-medium">
+              {originalData.price?.toLocaleString("vi-VN")} VNĐ
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Loại dịch vụ
+            </label>
+            <p className="text-lg text-gray-900">
+              {originalData.service_type?.name || "Chưa phân loại"}
+            </p>
+          </div>
         </div>
 
-        <Form.Item label="Hình ảnh dịch vụ" className="mt-6">
-          <Controller
-            name="images"
-            control={control}
-            render={() => (
-              <ImagesUploader
-                fileList={fileList}
-                setFileList={setFileList}
-                setValue={(field: string, value: any[]) => {
-                  if (field === "images") {
-                    setValue("images", value);
-                  }
-                }}
-                handlePreview={() => {}}
-                disabled
-                type="view"
-              />
-            )}
-          />
-        </Form.Item>
+        {fileList.length > 0 && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-3">
+              Hình ảnh dịch vụ
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:grid-cols-5">
+              {fileList.map((file) => (
+                <div
+                  key={file.uid}
+                  className="relative w-36 aspect-square rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                >
+                  <img
+                    src={file.url || file.preview}
+                    alt={file.name}
+                    className="w-full h-full object-cover"
+                    width={50}
+                    height={50}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <Button type="primary" className="mt-6" onClick={handlePlaceOrder}>
-          Đặt dịch vụ
-        </Button>
-      </Form>
+        <div>
+          <Button
+            type="primary"
+            onClick={handlePlaceOrder}
+            className="w-full md:w-auto"
+          >
+            Đặt dịch vụ
+          </Button>
+        </div>
+      </div>
 
       <Modal
         open={isModalOpen}
@@ -206,8 +183,10 @@ export default function DetailGuestServicePage() {
         onCancel={() => setIsModalOpen(false)}
         onOk={handleOrderSubmit(onOrderSubmit)}
         confirmLoading={modalLoading}
+        okText="Xác nhận"
+        cancelText="Hủy"
       >
-        <Form layout="vertical">
+        <Form layout="vertical" className="mt-4">
           <Form.Item label="Số lượng">
             <Controller
               name="quantity"
@@ -223,7 +202,11 @@ export default function DetailGuestServicePage() {
               name="guest_note"
               control={orderControl}
               render={({ field }) => (
-                <Input.TextArea {...field} placeholder="Nhập ghi chú..." />
+                <Input.TextArea
+                  {...field}
+                  placeholder="Nhập ghi chú (nếu có)..."
+                  rows={4}
+                />
               )}
             />
           </Form.Item>

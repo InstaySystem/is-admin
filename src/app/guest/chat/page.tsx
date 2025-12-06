@@ -242,7 +242,7 @@ export default function GuestChat() {
   };
 
   return (
-    <div className="flex h-[580px] bg-gray-50">
+    <div className="flex sm:h-[650px] h-[800px] md:h-[580px] bg-gray-50">
       <div
         className={`
     ${showSidebar ? "w-full" : "hidden"} 
