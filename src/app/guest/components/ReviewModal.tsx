@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Modal, Input, Button, message, Rate } from "antd";
+import { Modal, Input, Button, message, Rate, Form } from "antd";
 import { CreateReviewRequest, Review } from "@/types/reviews";
 
 const { TextArea } = Input;
@@ -27,24 +27,20 @@ export default function ReviewModal({
   const [star, setStar] = useState(0);
 
   useEffect(() => {
+    if (!open) return;
+
     if (initialData) {
-      setEmail(initialData.email);
-      setContent(initialData.content);
-      setStar(initialData.star);
+      setEmail(initialData.email || "");
+      setContent(initialData.content || "");
+      setStar(initialData.star || 0);
     } else {
       setEmail("");
       setContent("");
       setStar(0);
     }
-  }, [initialData, open]);
+  }, [open, initialData]);
 
   const handleSubmit = async () => {
-    if (!email.trim() || !content.trim() || star === 0) {
-      return message.warning(
-        "Vui lòng điền đầy đủ email, đánh giá và nội dung!"
-      );
-    }
-
     const payload: CreateReviewRequest = {
       email,
       content,
@@ -71,13 +67,14 @@ export default function ReviewModal({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isEditMode}
+          required
         />
       </div>
 
-      <div className="mb-4">
+      <Form.Item required className="mb-4">
         <label className="block mb-1 font-medium text-sm">Số sao</label>
         <Rate value={star} onChange={(value) => setStar(value)} />
-      </div>
+      </Form.Item>
 
       <div className="mb-4">
         <label className="block mb-1 font-medium text-sm">Nội dung</label>
@@ -86,6 +83,7 @@ export default function ReviewModal({
           placeholder="Nhập nội dung đánh giá..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          required
         />
       </div>
 

@@ -12,6 +12,7 @@ interface Props {
   setValue: (field: string, value: any[]) => void;
   handlePreview: (file: any) => void;
   disabled?: boolean;
+  type?: "create" | "view";
 }
 
 const { Dragger } = Upload;
@@ -22,6 +23,7 @@ export default function ImagesUploader({
   setValue,
   handlePreview,
   disabled = false,
+  type = "create",
 }: Props) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
@@ -85,43 +87,48 @@ export default function ImagesUploader({
 
   return (
     <>
-      <Dragger
-        disabled={disabled}
-        multiple
-        accept="image/*"
-        listType="picture-card"
-        beforeUpload={() => false}
-        onPreview={handlePreview}
-        onChange={handleUploadChange}
-        onRemove={handleRemove}
-        fileList={fileList.map((file) => ({
-          uid: file.uid,
-          name: file.name || file.key || "image",
-          status: "done" as const,
-          url: file.url || file.preview,
-          originFileObj: file.originFileObj,
-          preview: file.preview || file.url,
-        }))}
-        className="rounded-lg border-2 border-dashed border-[#608DBC] hover:border-[#3b5998] transition-all duration-300 p-4"
-      >
-        <p className="ant-upload-drag-icon">+</p>
-        <p className="ant-upload-text">Kéo thả hoặc click để tải ảnh</p>
-      </Dragger>
+      {type == "create" && (
+        <Dragger
+          disabled={disabled}
+          multiple
+          accept="image/*"
+          listType="picture-card"
+          beforeUpload={() => false}
+          onPreview={handlePreview}
+          onChange={handleUploadChange}
+          onRemove={handleRemove}
+          fileList={fileList.map((file) => ({
+            uid: file.uid,
+            name: file.name || file.key || "image",
+            status: "done" as const,
+            url: file.url || file.preview,
+            originFileObj: file.originFileObj,
+            preview: file.preview || file.url,
+          }))}
+          className="rounded-lg border-2 border-dashed border-[#608DBC] hover:border-[#3b5998] transition-all duration-300 p-4"
+        >
+          <p className="ant-upload-drag-icon">+</p>
+          <p className="ant-upload-text">Kéo thả hoặc click để tải ảnh</p>
+        </Dragger>
+      )}
 
-      {!disabled && (
-        <div className="mt-4 grid grid-cols-1 gap-2">
-          {fileList.map((file) => (
-            <div
-              key={file.uid}
-              className="flex items-center gap-2 border p-2 rounded"
-            >
-              <Image
-                width={80}
-                src={file.url || file.preview}
-                alt={file.name}
-                preview={{ visible: false }}
-                className="rounded"
-              />
+      <div className="mt-4 grid grid-cols-1 gap-2">
+        {fileList.map((file) => (
+          <div
+            key={file.uid}
+            className={`flex items-center gap-2 ${
+              type == "create" && "border"
+            } p-2 rounded`}
+          >
+            <Image
+              width={80}
+              src={file.url || file.preview}
+              alt={file.name}
+              preview
+              className="rounded"
+            />
+
+            {type !== "view" && (
               <div className="flex-1 flex items-center justify-between">
                 <div>
                   <Checkbox
@@ -140,10 +147,10 @@ export default function ImagesUploader({
                   />
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            )}
+          </div>
+        ))}
+      </div>
 
       <Modal
         open={previewOpen}

@@ -131,12 +131,13 @@ export default function DetailGuestServicePage() {
       <h2 className="text-lg font-semibold text-gray-800 mb-4">
         Chi tiết dịch vụ
       </h2>
-      <Form layout="vertical" disabled={true}>
+      <Form layout="vertical">
         <div className="grid grid-cols-2 gap-6">
           <Form.Item label="Tên dịch vụ">
             <Controller
               name="name"
               control={control}
+              disabled
               render={({ field }) => <Input {...field} disabled />}
             />
           </Form.Item>
@@ -145,6 +146,7 @@ export default function DetailGuestServicePage() {
             <Controller
               name="price"
               control={control}
+              disabled
               render={({ field }) => (
                 <InputNumber {...field} disabled className="w-full" />
               )}
@@ -187,6 +189,7 @@ export default function DetailGuestServicePage() {
                 }}
                 handlePreview={() => {}}
                 disabled
+                type="view"
               />
             )}
           />
@@ -197,7 +200,6 @@ export default function DetailGuestServicePage() {
         </Button>
       </Form>
 
-      {/* Modal đặt dịch vụ */}
       <Modal
         open={isModalOpen}
         title="Đặt dịch vụ"

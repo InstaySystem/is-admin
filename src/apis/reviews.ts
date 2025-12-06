@@ -15,5 +15,5 @@ export const createReview = (payload?: CreateReviewRequest) => {
 };
 
 export const updateReview = (id: number, payload?: any) => {
-  return axiosRequest.put("/reviews/me", payload);
+  return axiosRequest.patch("/reviews/me", payload);
 };

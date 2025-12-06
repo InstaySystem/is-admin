@@ -17,11 +17,8 @@ export default function GuestReviewPage() {
   const fetchReview = async () => {
     try {
       setLoading(true);
-
       const res = await getMyReview();
-      setModalOpen(true);
       const reviewData = res.data.data.review || null;
-
       setReview(reviewData);
     } catch (error: any) {
       if (error === "review not found") {
@@ -40,20 +37,26 @@ export default function GuestReviewPage() {
   }, []);
 
   const handleSubmit = async (data: CreateReviewRequest) => {
+    console.log("CLICK SUBMIT", { data, review });
     setSubmitting(true);
 
     try {
       if (review) {
+        console.log("Updating review ID:", review.id);
         const res = await updateReview(review.id, data);
+        console.log("Update response:", res);
         messageApi.success(res.data.message || "Cập nhật đánh giá thành công");
       } else {
+        console.log("Creating new review");
         const res = await createReview(data);
+        console.log("Create response:", res);
         messageApi.success(res.data.message || "Tạo đánh giá thành công");
       }
 
       await fetchReview();
       setModalOpen(false);
     } catch (err: any) {
+      console.error("Submit error:", err);
       messageApi.error(err);
     } finally {
       setSubmitting(false);

@@ -28,6 +28,7 @@ export default function GuestChat() {
 
   const messageEndRef = useRef<HTMLDivElement>(null);
   const hasInitialized = useRef(false);
+  const [showSidebar, setShowSidebar] = useState(true);
 
   useEffect(() => {
     setRole("guest");
@@ -241,8 +242,14 @@ export default function GuestChat() {
   };
 
   return (
-    <div className="flex h-[550px] bg-gray-50">
-      <div className="w-80 bg-white border-r border-gray-200 p-4 flex flex-col overflow-hidden">
+    <div className="flex h-[580px] bg-gray-50">
+      <div
+        className={`
+    ${showSidebar ? "w-full" : "hidden"} 
+    md:w-80 md:block
+    bg-white border-r border-gray-200 p-4 flex flex-col overflow-hidden
+  `}
+      >
         <Button
           type="primary"
           className="mb-4 w-full"
@@ -275,21 +282,24 @@ export default function GuestChat() {
                 <div
                   key={chat.id}
                   className={`
-            px-3 py-2 mx-2 mb-1 rounded-lg cursor-pointer transition-all duration-200
-            ${isSelected ? "bg-blue-50 shadow-sm" : "hover:bg-gray-50"}
-          `}
-                  onClick={() => handleSelectChat(chat.id, chat.code)}
+                px-3 py-2 mx-2 mb-1 rounded-lg cursor-pointer transition-all duration-200
+                ${isSelected ? "bg-blue-50 shadow-sm" : "hover:bg-gray-50"}
+              `}
+                  onClick={() => {
+                    handleSelectChat(chat.id, chat.code);
+                    setShowSidebar(false);
+                  }}
                 >
                   <div className="flex items-start gap-3">
                     <div
                       className={`
-              w-12 h-12 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-sm
-              ${
-                isSelected
-                  ? "bg-blue-500"
-                  : "bg-linear-to-br from-blue-400 to-blue-600"
-              }
-            `}
+                    w-12 h-12 rounded-full flex items-center justify-center shrink-0 text-white font-bold text-sm
+                    ${
+                      isSelected
+                        ? "bg-blue-500"
+                        : "bg-linear-to-br from-blue-400 to-blue-600"
+                    }
+                  `}
                     >
                       {chat.department?.display_name
                         ?.charAt(0)
@@ -300,10 +310,10 @@ export default function GuestChat() {
                       <div className="flex items-center justify-between mb-1">
                         <h3
                           className={`
-                  font-semibold truncate
-                  ${isSelected ? "text-blue-600" : "text-gray-900"}
-                  ${hasUnread ? "font-bold" : ""}
-                `}
+                        font-semibold truncate
+                        ${isSelected ? "text-blue-600" : "text-gray-900"}
+                        ${hasUnread ? "font-bold" : ""}
+                      `}
                         >
                           {chat.department?.display_name}
                         </h3>
@@ -316,9 +326,13 @@ export default function GuestChat() {
                         <div className="flex items-center gap-1">
                           <p
                             className={`
-                    text-sm truncate flex-1
-                    ${hasUnread ? "text-gray-900 font-medium" : "text-gray-500"}
-                  `}
+                          text-sm truncate flex-1
+                          ${
+                            hasUnread
+                              ? "text-gray-900 font-medium"
+                              : "text-gray-500"
+                          }
+                        `}
                           >
                             {chat.last_message.sender_type === "guest" && (
                               <span className="text-gray-400">Bạn: </span>
@@ -347,52 +361,86 @@ export default function GuestChat() {
         )}
       </div>
 
-      <div className="flex-1 flex flex-col p-4 bg-white">
-        <div className="flex-1 border border-gray-200 rounded-lg p-4 mb-4 overflow-y-auto bg-gray-50">
+      <div
+        className={`
+    ${!showSidebar ? "w-full" : "hidden"} 
+    md:flex-1 md:flex
+    flex flex-col bg-white 
+  `}
+      >
+        {selectedChatId && (
+          <div className="md:hidden flex items-center gap-3 p-4 border-b border-gray-200 bg-white">
+            <button
+              onClick={() => setShowSidebar(true)}
+              className="text-blue-500 font-semibold"
+            >
+              ← Quay lại
+            </button>
+            <div className="font-semibold text-gray-900">
+              {
+                chats.find((c) => c.id === selectedChatId)?.department
+                  ?.display_name
+              }
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
           {selectedChatId ? (
             selectedMessages.length === 0 ? (
               <Empty description="Chưa có tin nhắn nào" />
             ) : (
               selectedMessages.map((msg) => {
                 const isGuest = msg.sender_type === "guest";
-
-                // 🔥 Check đã đọc: nếu là tin nhắn guest và có is_read hoặc staff trong read_by
                 const isReadByStaff =
                   isGuest && (msg.is_read || msg.read_by?.includes("staff"));
 
                 return (
                   <div
                     key={msg.id}
-                    className={`mb-4 p-3 rounded-lg max-w-xs flex ${
+                    className={`mb-4 flex ${
                       msg.sender_type === "guest"
-                        ? "ml-auto bg-blue-100 flex-row-reverse"
-                        : "bg-white border border-gray-200"
+                        ? "justify-end"
+                        : "justify-start"
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-white mr-2">
-                      {msg.sender_type === "guest" ? "GU" : "ST"}
-                    </div>
-
-                    <div>
-                      <div className="text-sm text-gray-900 px-2">
-                        {msg.content}
+                    <div
+                      className={`
+                    p-3 rounded-lg max-w-[75%] sm:max-w-xs flex gap-2
+                    ${
+                      msg.sender_type === "guest"
+                        ? "bg-blue-100 flex-row-reverse"
+                        : "bg-white border border-gray-200"
+                    }
+                  `}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                        {msg.sender_type === "guest" ? "GU" : "ST"}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
-                        <span>
-                          {new Date(msg.created_at).toLocaleTimeString("vi-VN")}
-                        </span>
 
-                        {msg.sender_type === "guest" && (
-                          <>
-                            {isReadByStaff ? (
-                              <span className="text-blue-500 font-medium">
-                                ✔✔ Đã xem
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">✔ Đã gửi</span>
+                      <div className="flex-1">
+                        <div className="text-sm text-gray-900 break-words">
+                          {msg.content}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                          <span>
+                            {new Date(msg.created_at).toLocaleTimeString(
+                              "vi-VN"
                             )}
-                          </>
-                        )}
+                          </span>
+
+                          {msg.sender_type === "guest" && (
+                            <>
+                              {isReadByStaff ? (
+                                <span className="text-blue-500 font-medium">
+                                  ✔✔ Đã xem
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">✔ Đã gửi</span>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -400,27 +448,32 @@ export default function GuestChat() {
               })
             )
           ) : (
-            <Empty description="Chọn phòng chat" />
+            <div className="h-full flex items-center justify-center">
+              <Empty description="Chọn phòng chat" />
+            </div>
           )}
           <div ref={messageEndRef} />
         </div>
 
-        <div className="flex gap-2">
-          <Input
-            placeholder="Nhập tin nhắn..."
-            value={messageContent}
-            onChange={(e) => setMessageContent(e.target.value)}
-            onPressEnter={handleSendMessage}
-            disabled={!isConnected}
-            className="flex-1"
-          />
-          <Button
-            type="primary"
-            onClick={handleSendMessage}
-            disabled={!isConnected}
-          >
-            Gửi
-          </Button>
+        {/* Input Area */}
+        <div className="p-4 bg-white border-t border-gray-200">
+          <div className="flex gap-2">
+            <Input
+              placeholder="Nhập tin nhắn..."
+              value={messageContent}
+              onChange={(e) => setMessageContent(e.target.value)}
+              onPressEnter={handleSendMessage}
+              disabled={!isConnected}
+              className="flex-1"
+            />
+            <Button
+              type="primary"
+              onClick={handleSendMessage}
+              disabled={!isConnected}
+            >
+              Gửi
+            </Button>
+          </div>
         </div>
       </div>
 
