@@ -2,12 +2,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Table, Space, Button, Input, DatePicker, Pagination } from "antd";
+import {
+  Table,
+  Space,
+  Button,
+  Input,
+  DatePicker,
+  Pagination,
+  Select,
+} from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { getBookings } from "@/apis/booking";
 import { Booking } from "@/types/booking";
 import CustomAlert from "@/components/ui/CustomAlert";
 import CommonModal from "@/components/modals/CommonModal";
+import { getSources } from "@/apis/source";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 
@@ -19,6 +28,9 @@ export default function ManageBooking() {
 
   const [search, setSearch] = useState("");
   const [fromTo, setFromTo] = useState<[string, string] | null>(null);
+
+  const [sources, setSources] = useState<any[]>([]);
+  const [sourceId, setSourceId] = useState<string | undefined>(undefined);
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -39,6 +51,15 @@ export default function ManageBooking() {
 
   const router = useRouter();
 
+  const fetchSources = useCallback(async () => {
+    try {
+      const res = await getSources();
+      setSources(res.data.data.sources || []);
+    } catch (err: any) {
+      showAlert("error", err.message || "Lỗi tải danh sách nguồn booking");
+    }
+  }, []);
+
   const fetchBookings = useCallback(async () => {
     setLoading(true);
     try {
@@ -46,6 +67,7 @@ export default function ManageBooking() {
         page,
         limit,
         search: search || undefined,
+        source_id: sourceId || undefined,
         filter: undefined,
         from: fromTo?.[0],
         to: fromTo?.[1],
@@ -60,7 +82,11 @@ export default function ManageBooking() {
       showAlert("error", err.message || "Lỗi tải danh sách booking");
     }
     setLoading(false);
-  }, [page, limit, search, fromTo]);
+  }, [page, limit, search, fromTo, sourceId]);
+
+  useEffect(() => {
+    fetchSources();
+  }, []);
 
   useEffect(() => {
     fetchBookings();
@@ -167,6 +193,21 @@ export default function ManageBooking() {
               );
               setPage(1);
             }}
+          />
+
+          <Select
+            allowClear
+            placeholder="Nguồn booking"
+            className="min-w-[180px]"
+            value={sourceId}
+            onChange={(value) => {
+              setSourceId(value);
+              setPage(1);
+            }}
+            options={sources.map((s) => ({
+              label: s.name,
+              value: s.id,
+            }))}
           />
         </div>
       </div>
