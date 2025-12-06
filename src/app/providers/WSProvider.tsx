@@ -39,6 +39,7 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
     useMessageStore();
   const [msgApi, contextHolder] = message.useMessage();
   const role = useAppStore((s) => s._role);
+  console.log("role: ", role);
 
   const reconnect = () => {
     if (!isConnected) {
@@ -47,7 +48,11 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const connectWS = () => {
-    if (role === "admin") return;
+    const isAdmin = role === "admin";
+    if (isAdmin) {
+      console.log("Admin detected, skipping WS");
+      return;
+    }
 
     if (wsRef.current) {
       console.log("WS already exists, skip connect");
@@ -57,40 +62,42 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
     shouldReconnect.current = true;
 
     try {
-      const url = "http://localhost:8080/api/v1/ws";
-      const ws = new WebSocket(url);
+      if (!isAdmin) {
+        const url = "http://localhost:8080/api/v1/ws";
+        const ws = new WebSocket(url);
 
-      wsRef.current = ws;
+        wsRef.current = ws;
 
-      ws.onopen = () => {
-        console.log("✅ WS Connected");
-        setIsConnected(true);
-        reconnectAttemptsRef.current = 0;
-      };
+        ws.onopen = () => {
+          console.log("✅ WS Connected");
+          setIsConnected(true);
+          reconnectAttemptsRef.current = 0;
+        };
 
-      ws.onmessage = (ev) => {
-        try {
-          const res = JSON.parse(ev.data);
-          handleWSMessage(res);
-        } catch (err) {
-          console.error("WS parse error:", err);
-        }
-      };
+        ws.onmessage = (ev) => {
+          try {
+            const res = JSON.parse(ev.data);
+            handleWSMessage(res);
+          } catch (err) {
+            console.error("WS parse error:", err);
+          }
+        };
 
-      ws.onerror = (e) => {
-        console.error("❌ WS Error", e);
-      };
+        ws.onerror = (e) => {
+          console.error("❌ WS Error", e);
+        };
 
-      ws.onclose = () => {
-        console.log("⚠️ WS Closed");
-        setIsConnected(false);
-        wsRef.current = null;
+        ws.onclose = () => {
+          console.log("⚠️ WS Closed");
+          setIsConnected(false);
+          wsRef.current = null;
 
-        if (shouldReconnect.current && reconnectAttemptsRef.current < 5) {
-          reconnectAttemptsRef.current++;
-          setTimeout(connectWS, 3000);
-        }
-      };
+          if (shouldReconnect.current && reconnectAttemptsRef.current < 5) {
+            reconnectAttemptsRef.current++;
+            setTimeout(connectWS, 3000);
+          }
+        };
+      }
     } catch (err) {
       console.error("Failed to create WS:", err);
     }

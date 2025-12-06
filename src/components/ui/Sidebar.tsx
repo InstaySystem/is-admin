@@ -12,6 +12,7 @@ import {
   FaRegQuestionCircle,
   FaBookMedical,
   FaFirstOrderAlt,
+  FaComments,
 } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
 import Image from "next/image";
@@ -46,6 +47,11 @@ const menuItems = [
     icon: <FaUsers />,
     path: "/department",
     role: "admin-only",
+  },
+  {
+    name: "Review",
+    icon: <FaComments />,
+    path: "/reviews",
   },
 
   { name: "Profile", icon: <FaUser />, path: "/profile" },
@@ -88,7 +94,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 alt="Logo"
                 className="object-cover"
               />
-
             </motion.div>
           )}
         </AnimatePresence>

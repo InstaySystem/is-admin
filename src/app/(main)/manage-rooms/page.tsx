@@ -160,7 +160,15 @@ export default function ManageRoom() {
       title: "Tầng",
       key: "floor",
       render: (_: any, record: Room) =>
-        record.floor ? record.floor : "—",
+        record.floor ? (
+          <span>
+            {typeof record.floor === "string"
+              ? record.floor
+              : record.floor.name}
+          </span>
+        ) : (
+          "—"
+        ),
     },
     {
       title: "Thao tác",
@@ -196,13 +204,19 @@ export default function ManageRoom() {
               placeholder="Tìm kiếm phòng..."
               allowClear
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
             <Button
               type="primary"
               icon={<SearchOutlined />}
               className="bg-[#608DBC]!"
-              onClick={() => fetchRooms()}
+              onClick={() => {
+                setPage(1);
+                fetchRooms();
+              }}
             />
           </Space.Compact>
 
@@ -211,7 +225,10 @@ export default function ManageRoom() {
             placeholder="Loại phòng"
             className="min-w-[200px]"
             value={roomTypeId}
-            onChange={setRoomTypeId}
+            onChange={(value) => {
+              setRoomTypeId(value);
+              setPage(1);
+            }}
             options={roomTypes.map((t) => ({
               label: t.name,
               value: t.id,
@@ -223,7 +240,10 @@ export default function ManageRoom() {
             placeholder="Tầng"
             className="min-w-[150px]"
             value={floorId}
-            onChange={setFloorId}
+            onChange={(value) => {
+              setFloorId(value);
+              setPage(1);
+            }}
             options={floors.map((f) => ({
               label: f.name,
               value: f.id,
