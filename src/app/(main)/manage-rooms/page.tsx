@@ -164,7 +164,7 @@ export default function ManageRoom() {
           <span>
             {typeof record.floor === "string"
               ? record.floor
-              : record.floor.name}
+              : record.floor}
           </span>
         ) : (
           "—"

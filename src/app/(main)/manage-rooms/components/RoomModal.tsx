@@ -48,7 +48,7 @@ export default function RoomModal({
         floor:
           typeof initialData.floor === "string"
             ? initialData.floor
-            : initialData.floor?.name ?? "",
+            : initialData.floor ?? "",
         room_type_id: Number(
           initialData.room_type_id ?? initialData.room_type?.id ?? 0
         ),
