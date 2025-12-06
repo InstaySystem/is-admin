@@ -1,11 +1,11 @@
 "use client";
 
-import CreateOrderForm from "../components/CreateOrderForm";
+import ClientForm from "./ClientForm";
 
 export default function Page() {
   return (
     <div className="p-6 flex justify-center">
-      <CreateOrderForm />
+      <ClientForm/>
     </div>
   );
 }
