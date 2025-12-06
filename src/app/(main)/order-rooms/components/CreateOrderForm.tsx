@@ -9,6 +9,7 @@ import { Booking } from "@/types/booking";
 import { getBookings } from "@/apis/booking";
 import { getRooms } from "@/apis/room";
 import { useAppStore } from "@/stores/useAppStore";
+import CustomAlert from "@/components/ui/CustomAlert";
 
 export default function CreateOrderForm() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -18,6 +19,17 @@ export default function CreateOrderForm() {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const { setUrlQrCode } = useAppStore();
+  const [alert, setAlert] = useState({
+    open: false,
+    type: "success" as "success" | "error" | "info" | "warning",
+    message: "",
+  });
+
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const showAlert = (type: typeof alert.type, message: string) => {
+    setAlert({ open: true, type, message });
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,8 +40,8 @@ export default function CreateOrderForm() {
 
         const bookingsRes = await getBookings();
         setBookings(bookingsRes.data.data.bookings);
-      } catch (err) {
-        message.error("Không thể tải dữ liệu Booking/Room");
+      } catch (err: any) {
+        messageApi.error(err);
       } finally {
         setLoadingData(false);
       }
@@ -39,7 +51,7 @@ export default function CreateOrderForm() {
 
   const handleCreate = async () => {
     if (!bookingId || !roomId) {
-      message.warning("Vui lòng chọn đủ Booking và Room!");
+      showAlert("error", "Vui lòng chọn đủ Booking và Room!");
       return;
     }
 
@@ -55,17 +67,12 @@ export default function CreateOrderForm() {
       const qrCodeUrl = res.data.data.secret_code;
       setUrlQrCode(qrCodeUrl);
 
-      message.success("Tạo đơn phòng thành công");
+      messageApi.success(res.data.message);
       window.location.href = `/order-rooms/detail/${orderId}?qr=${encodeURIComponent(
         typeof qrCodeUrl === "string" ? qrCodeUrl : res.data.data.secret_code
       )}`;
     } catch (err: any) {
-      if (err === "Session expired. Please login again.") {
-        message.error("Phiên đã hết hạn, vui lòng đăng nhập lại");
-        window.location.href = "/login";
-      } else {
-        message.error(err?.response?.data?.message || "Lỗi tạo đơn phòng");
-      }
+      messageApi.error(err);
     } finally {
       setLoading(false);
     }
@@ -74,48 +81,57 @@ export default function CreateOrderForm() {
   if (loadingData) return <Spin tip="Đang tải dữ liệu..." />;
 
   return (
-    <Card className="max-w-xl w-full shadow-lg p-6">
-      <h2 className="text-xl font-semibold mb-4">Tạo đơn phòng</h2>
+    <>
+      {contextHolder}
+      <Card className="max-w-xl w-full shadow-lg p-6">
+        <h2 className="text-xl font-semibold mb-4">Tạo đơn phòng</h2>
 
-      <div className="mb-4">
-        <label className="block mb-1 text-sm font-medium">Chọn Booking</label>
-        <Select
-          className="w-full"
+        <div className="mb-4">
+          <label className="block mb-1 text-sm font-medium">Chọn Booking</label>
+          <Select
+            className="w-full"
+            size="large"
+            placeholder="Chọn booking..."
+            onChange={(value) => setBookingId(value)}
+            options={bookings.map((b) => ({
+              label: `${b.guest_name} — (${b.booking_number})`,
+              value: b.id,
+            }))}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block mb-1 text-sm font-medium">Chọn Phòng</label>
+          <Select
+            className="w-full"
+            size="large"
+            placeholder="Chọn phòng..."
+            onChange={(value) => setRoomId(value)}
+            options={rooms.map((r) => ({
+              label: `${r.name} — ${r.room_type?.name || "N/A"} (Tầng ${
+                r.floor || "N/A"
+              })`,
+              value: r.id,
+            }))}
+          />
+        </div>
+
+        <Button
+          type="primary"
           size="large"
-          placeholder="Chọn booking..."
-          onChange={(value) => setBookingId(value)}
-          options={bookings.map((b) => ({
-            label: `${b.guest_name} — (${b.booking_number})`,
-            value: b.id,
-          }))}
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block mb-1 text-sm font-medium">Chọn Phòng</label>
-        <Select
           className="w-full"
-          size="large"
-          placeholder="Chọn phòng..."
-          onChange={(value) => setRoomId(value)}
-          options={rooms.map((r) => ({
-            label: `${r.name} — ${r.room_type?.name || "N/A"} (Tầng ${
-              r.floor || "N/A"
-            })`,
-            value: r.id,
-          }))}
-        />
-      </div>
+          onClick={handleCreate}
+          loading={loading}
+        >
+          Tạo đơn phòng
+        </Button>
 
-      <Button
-        type="primary"
-        size="large"
-        className="w-full"
-        onClick={handleCreate}
-        loading={loading}
-      >
-        Tạo đơn phòng
-      </Button>
-    </Card>
+        <CustomAlert
+          open={alert.open}
+          type={alert.type}
+          message={alert.message}
+        />
+      </Card>
+    </>
   );
 }

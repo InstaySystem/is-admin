@@ -9,7 +9,7 @@ import {
   HomeOutlined,
 } from "@ant-design/icons";
 import HeaderGuest from "@/components/layout/HeaderGuest";
-import { FaSnapchat } from "react-icons/fa";
+import { FaComments, FaSnapchat } from "react-icons/fa";
 import { useNotificationStore } from "@/stores/useNotificationStore";
 import { IoChatbubbleOutline } from "react-icons/io5";
 
@@ -68,6 +68,11 @@ export default function GuestLayout({
       key: "/guest/chat",
       label: "Chat",
       icon: <IoChatbubbleOutline className="text-xl" />,
+    },
+    {
+      key: "/guest/reviews",
+      label: "Reviews",
+      icon: <FaComments className="text-xl" />,
     },
   ];
 

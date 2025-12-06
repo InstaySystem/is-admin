@@ -121,7 +121,7 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
               resChats.data.data.chats.forEach((c: any) => addOrUpdateChat(c));
             }
           } catch (err) {
-            console.error("❌ Lỗi fetch chats guest:", err);
+            console.error(err);
           }
         } else {
           try {
@@ -130,7 +130,7 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
               resChats.data.data.chats.forEach((c: any) => addOrUpdateChat(c));
             }
           } catch (err) {
-            console.error("❌ Lỗi fetch chats admin:", err);
+            console.error(err);
           }
         }
 
@@ -185,8 +185,6 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       case "mark_read": {
-        console.log("✅ mark_read:", res.data);
-
         const { chat_id, reader_id, reader_type, read_at } = res.data || {};
 
         if (!chat_id) return;

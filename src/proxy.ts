@@ -12,6 +12,8 @@ export default function middleware(request: NextRequest) {
   const token = request.cookies.get(ACCESS_TOKEN)?.value;
   const role = request.cookies.get("role")?.value ?? null;
   const pathname = request.nextUrl.pathname;
+  const isStaff = role?.startsWith("staff");
+  const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
 
   if (!token && pathname.startsWith("/dashboard")) {
     return NextResponse.redirect(new URL(PATH.LOGIN, request.url));
@@ -20,9 +22,6 @@ export default function middleware(request: NextRequest) {
   if (!token && PRIVATE_PATHS.includes(pathname)) {
     return NextResponse.redirect(new URL(PATH.LOGIN, request.url));
   }
-
-  const isStaff = role?.startsWith("staff");
-  const isAdminRoute = ADMIN_ROUTES.some((route) => pathname.startsWith(route));
 
   if (isStaff && isAdminRoute) {
     return NextResponse.redirect(new URL(PATH.HOME, request.url));
