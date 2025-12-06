@@ -115,7 +115,6 @@ export default function OrderServicesPage() {
 
   return (
     <div className="p-6 text-lg">
-      \{" "}
       <div className="flex flex-wrap gap-3 justify-between items-start mb-4 text-lg">
         <div className="flex flex-wrap gap-3 items-center flex-1">
           <Space.Compact className="min-w-[250px] w-[300px]">

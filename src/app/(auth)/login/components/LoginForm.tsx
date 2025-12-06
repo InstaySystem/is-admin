@@ -10,6 +10,7 @@ import { FaUser, FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
 import { FiLogIn } from "react-icons/fi";
 import { useAppStore } from "@/stores/useAppStore";
 import { setCookie } from "@/utils/cookies";
+import Image from "next/image";
 
 const schema = yup.object().shape({
   username: yup.string().required("Vui lòng nhập username"),
@@ -52,7 +53,15 @@ export default function LoginForm() {
 
   return (
     <div className="text-black">
-      <div className="w-16 h-16 bg-gray-100 rounded-2xl mx-auto mb-6 shadow-md"></div>
+      <div className="w-16 h-16 bg-gray-100 rounded-2xl mx-auto mb-6 shadow-md">
+        <Image
+          src="/images/logo.jpg"
+          width={64}
+          height={64}
+          alt="Logo"
+          className="object-cover rounded-2xl"
+        />
+      </div>
 
       <h1 className="text-center text-2xl font-bold">Instay Admin</h1>
       <p className="text-center text-gray-500 text-sm mt-1 mb-8">

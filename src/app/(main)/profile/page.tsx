@@ -224,7 +224,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 <div
                   className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm ${
                     user?.is_active
@@ -237,9 +237,8 @@ export default function ProfilePage() {
                   ) : (
                     <FaToggleOff className="text-red-600 shrink-0" />
                   )}
-                  <span className="font-medium shrink-0">Trạng thái:</span>
                   <span>
-                    {user?.is_active ? "Hoạt động" : "Ngưng hoạt động"}
+                    {user?.is_active ? "Đang hoạt động" : "Ngưng hoạt động"}
                   </span>
                 </div>
 

@@ -10,12 +10,14 @@ import {
   Pagination,
   Rate,
   Select,
+  Button,
 } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { Review } from "@/types/reviews";
 import CustomAlert from "@/components/ui/CustomAlert";
 import dayjs from "dayjs";
 import { getAllReviewsAdmin } from "@/apis/reviews";
+import { SearchOutlined } from "@ant-design/icons";
 
 const { RangePicker } = DatePicker;
 
@@ -123,12 +125,10 @@ export default function ManageReviews() {
 
   return (
     <div style={{ padding: 24 }}>
-      <h1 className="text-2xl font-bold mb-6">Quản Lý Reviews</h1>
-
       <div className="flex flex-wrap gap-3 justify-between items-start mb-4">
         <div className="flex flex-wrap gap-3 items-center flex-1">
           <Space.Compact className="min-w-[200px] w-[250px]">
-            <Input.Search
+            <Input
               placeholder="Tìm kiếm email..."
               allowClear
               value={search}
@@ -136,6 +136,12 @@ export default function ManageReviews() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
+            />
+            <Button
+              type="primary"
+              icon={<SearchOutlined />}
+              className="bg-[#608DBC]!"
+              onClick={() => fetchReviews()}
             />
           </Space.Compact>
 

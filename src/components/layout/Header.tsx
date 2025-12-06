@@ -156,7 +156,7 @@ export default function Header() {
             onOpenChange={handleOpenChange}
           >
             <Badge count={unreadCount} size="small">
-              <IoNotificationsOutline className="text-2xl cursor-pointer text-gray-600 hover:text-blue-600" />
+              <IoNotificationsOutline className="text-2xl cursor-pointer text-black hover:text-blue-600" />
             </Badge>
           </Dropdown>
 
@@ -167,7 +167,7 @@ export default function Header() {
               placement="bottomRight"
             >
               <Button type="text" className="flex items-center gap-3">
-                <Avatar size={42} className="bg-blue-600 text-white">
+                <Avatar size={42} className="bg-[#608DBC]! text-white">
                   {user.first_name?.[0]}
                   {user.last_name?.[0]}
                 </Avatar>

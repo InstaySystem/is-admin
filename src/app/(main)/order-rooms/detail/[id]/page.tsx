@@ -44,9 +44,9 @@ export default function Page() {
       <Button
         type="default"
         className="mb-4"
-        onClick={() => router.push("/order-rooms/create")}
+        onClick={() => router.push(`/manage-booking/${order.booking?.id}`)}
       >
-        Back
+        Booking
       </Button>
 
       <Card className="mb-6 shadow-lg">
@@ -74,7 +74,7 @@ export default function Page() {
           </Descriptions.Item>
           <Descriptions.Item label="Room" className="text-black">
             {order.room?.name || "-"} — {order.room?.room_type?.name || "-"}{" "}
-            (Tầng {order.room?.floor?.name || "-"})
+            (Tầng {order.room?.floor || "-"})
           </Descriptions.Item>
           <Descriptions.Item label="Created By" className="text-black">
             {order.created_by?.first_name} {order.created_by?.last_name} (
@@ -88,9 +88,11 @@ export default function Page() {
         </Descriptions>
       </Card>
 
-      <div className="mt-4">
-        <QRCodeCard code={qrCodeUrl || order.secret_code} />
-      </div>
+      {qrCodeUrl && (
+        <div className="mt-4 flex justify-center">
+          <QRCodeCard code={qrCodeUrl} />
+        </div>
+      )}
     </div>
   );
 }

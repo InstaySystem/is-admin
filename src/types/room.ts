@@ -11,7 +11,7 @@ export interface Room {
   floor_id: string;
 
   room_type?: RoomType;
-  floor?: Floor;
+  floor: string;
   created_by?: User;
   updated_by?: User;
 }

@@ -71,13 +71,19 @@ export default function GuestReviewPage() {
   return (
     <div className="p-4 max-w-lg mx-auto">
       {contextHolder}
-      <h1 className="text-2xl font-semibold mb-4 text-black">
+      <h1 className="text-2xl font-semibold text-center mb-4 text-black">
         Đánh giá của tôi
       </h1>
 
       {!review ? (
-        <div className="text-center text-gray-500 mb-4">
-          Bạn chưa có đánh giá nào
+        <div className="text-center mb-4 space-y-3">
+          <div className="text-gray-500">Bạn chưa có đánh giá nào</div>
+          <button
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            onClick={() => setModalOpen(true)}
+          >
+            Đánh giá
+          </button>
         </div>
       ) : (
         <Card

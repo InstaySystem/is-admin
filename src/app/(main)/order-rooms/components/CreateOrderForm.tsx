@@ -10,6 +10,7 @@ import { getBookings } from "@/apis/booking";
 import { getRooms } from "@/apis/room";
 import { useAppStore } from "@/stores/useAppStore";
 import CustomAlert from "@/components/ui/CustomAlert";
+import { useSearchParams } from "next/navigation";
 
 export default function CreateOrderForm() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -24,6 +25,9 @@ export default function CreateOrderForm() {
     type: "success" as "success" | "error" | "info" | "warning",
     message: "",
   });
+
+  const searchParams = useSearchParams();
+  const bookingFromUrl = searchParams.get("booking_id");
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -48,6 +52,12 @@ export default function CreateOrderForm() {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (bookingFromUrl) {
+      setBookingId(Number(bookingFromUrl));
+    }
+  }, [bookingFromUrl]);
 
   const handleCreate = async () => {
     if (!bookingId || !roomId) {
@@ -92,6 +102,8 @@ export default function CreateOrderForm() {
             className="w-full"
             size="large"
             placeholder="Chọn booking..."
+            value={bookingId}
+            disabled={!!bookingFromUrl}
             onChange={(value) => setBookingId(value)}
             options={bookings.map((b) => ({
               label: `${b.guest_name} — (${b.booking_number})`,
@@ -119,7 +131,7 @@ export default function CreateOrderForm() {
         <Button
           type="primary"
           size="large"
-          className="w-full"
+          className="w-full bg-[#608DBC]!"
           onClick={handleCreate}
           loading={loading}
         >

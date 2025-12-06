@@ -33,6 +33,7 @@ const onRefreshed = (newToken: string) => {
 
 // Axios chính cho app
 const axiosRequest: AxiosInstance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 10000,
   withCredentials: true,
   paramsSerializer: (params) =>
@@ -41,27 +42,13 @@ const axiosRequest: AxiosInstance = axios.create({
 
 // Axios riêng cho refresh token
 const refreshAxios = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
 });
 
-let baseUrlPromise: Promise<string> | null = null;
-
-async function getBaseUrl(): Promise<string> {
-  if (!baseUrlPromise) {
-    baseUrlPromise = fetch("/api/config")
-      .then((r) => r.json())
-      .then((data) => data.apiUrl);
-  }
-  return baseUrlPromise;
-}
-
 // Gắn token vào header
 axiosRequest.interceptors.request.use(
-  async (config) => {
-    if (!config.baseURL) {
-      config.baseURL = await getBaseUrl();
-    }
-
+  (config) => {
     const token = getCookie(ACCESS_TOKEN);
     if (token) {
       config.headers = config.headers ?? {};

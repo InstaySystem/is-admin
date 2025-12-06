@@ -18,7 +18,15 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
           <div className="absolute p-10 flex flex-col justify-start text-white drop-shadow-lg">
             <div className="flex items-center gap-2">
-              <div className="w-12 h-12 bg-gray-100 rounded-2xl shadow-md"></div>
+              <div className="w-12 h-12 bg-gray-100 rounded-2xl shadow-md">
+                <Image
+                  src="/images/logo.jpg"
+                  width={48}
+                  height={48}
+                  alt="Logo"
+                  className="object-cover rounded-2xl"
+                />
+              </div>
               <div>
                 <h2 className="text-xl font-semibold">Dela Sol Hotel</h2>
                 <p className="text-sm opacity-80 mt-1">Sapa, Vietnam</p>

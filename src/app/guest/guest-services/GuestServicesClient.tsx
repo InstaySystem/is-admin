@@ -128,7 +128,7 @@ export default function GuestServicesPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="p-4 max-w-md mx-auto">
-        <h1 className="text-2xl font-semibold mb-4 text-black">
+        <h1 className="text-2xl text-center font-semibold mb-4 text-black">
           Danh sách dịch vụ đã đặt
         </h1>
 

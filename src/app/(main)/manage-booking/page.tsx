@@ -91,6 +91,11 @@ export default function ManageBooking() {
       render: (text: string) => <span className="font-medium">{text}</span>,
     },
     {
+      title: "Source",
+      dataIndex: "source",
+      key: "source",
+    },
+    {
       title: "Guest Name",
       dataIndex: "guest_name",
       key: "guest_name",
@@ -164,14 +169,6 @@ export default function ManageBooking() {
             }}
           />
         </div>
-
-        <Button
-          type="primary"
-          className="bg-[#608DBC]!"
-          onClick={() => router.push("/order-rooms/create")}
-        >
-          Tạo đơn đặt phòng
-        </Button>
       </div>
 
       <Table
