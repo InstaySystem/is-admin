@@ -63,7 +63,7 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
       if (!isAdmin) {
-        const url = "http://localhost:8080/api/v1/ws";
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/ws`;
         const ws = new WebSocket(url);
 
         wsRef.current = ws;
