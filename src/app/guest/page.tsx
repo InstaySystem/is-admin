@@ -70,12 +70,12 @@ export default function GuestServicePage() {
 
   return (
     <div className="p-4 min-h-screen bg-gray-50 space-y-6">
-      <header className="text-center text-xl font-bold">
-        Instay - Dịch vụ
+      <header className="text-center text-2xl font-bold">
+        Instay
       </header>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3 text-black">Loại Dịch Vụ</h2>
+        <h2 className="text-lg font-semibold mb-3 text-black">Dịch Vụ</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {serviceTypes.map((item) => (
@@ -91,7 +91,7 @@ export default function GuestServicePage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3 text-black">Loại Yêu Cầu</h2>
+        <h2 className="text-lg font-semibold mb-3 text-black">Yêu Cầu</h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {requestTypes.map((item) => (
