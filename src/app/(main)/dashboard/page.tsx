@@ -115,11 +115,14 @@ export default function DashBoardPage() {
             height={300}
             // ✅ ẨN TOÀN BỘ CHÚ THÍCH BÊN PHẢI
             slotProps={{
-              legend: { hidden: true },
+              legend: {
+                sx: {
+                  display: "none",
+                },
+              },
             }}
           />
 
-          {/* ✅ LEGEND CUSTOM PHÍA DƯỚI */}
           <div className="grid grid-cols-1 gap-2 w-full text-sm">
             {data.popular_room_type_stats.map((i: any, idx: number) => (
               <div
@@ -135,7 +138,6 @@ export default function DashBoardPage() {
           </div>
         </Card>
 
-        {/* ✅ BOOKING SOURCE = CỘT */}
         <Card className="p-6">
           <h2 className="font-bold mb-4">Booking Source (Quantity)</h2>
 
@@ -155,7 +157,6 @@ export default function DashBoardPage() {
           />
         </Card>
 
-        {/* ✅ SERVICE USAGE = CỘT TĂNG DẦN */}
         <Card className="p-6">
           <h2 className="font-bold mb-4">Service Usage (Ascending)</h2>
 
@@ -176,7 +177,6 @@ export default function DashBoardPage() {
         </Card>
       </div>
 
-      {/* ✅ TRẠNG THÁI */}
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="p-6">
           <h2 className="font-bold mb-4">Order Service Status</h2>
@@ -216,7 +216,6 @@ export default function DashBoardPage() {
   );
 }
 
-/* ✅ CARD COMPONENT */
 function StatCard({
   title,
   value,
