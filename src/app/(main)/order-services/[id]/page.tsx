@@ -147,7 +147,7 @@ export default function OrderServiceDetailPage() {
             </p>
             <p>
               <span className="font-semibold">Tổng tiền:</span>{" "}
-              {total_price.toLocaleString()}đ
+              {total_price.toLocaleString()} VND
             </p>
           </div>
 

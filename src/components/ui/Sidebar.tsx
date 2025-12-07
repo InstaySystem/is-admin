@@ -18,7 +18,7 @@ import { FiMenu } from "react-icons/fi";
 import Image from "next/image";
 
 import { useAppStore } from "@/stores/useAppStore";
-import { IoChatbubbleOutline } from "react-icons/io5";
+import { use } from "react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -52,6 +52,7 @@ const menuItems = [
     name: "Review",
     icon: <FaComments />,
     path: "/reviews",
+    role: "staff-customer-care",
   },
 
   { name: "Profile", icon: <FaUser />, path: "/profile" },
@@ -62,7 +63,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   const role = useAppStore((state) => state._role);
 
   const filteredMenu = menuItems.filter((item) => {
-    if (role !== "admin" && item.role === "admin-only") return false;
+    if (item.role === "admin-only" && role !== "admin") return false;
+    if (item.role === "staff-customer-care" && role !== "staff-customer-care")
+      return false;
     return true;
   });
 

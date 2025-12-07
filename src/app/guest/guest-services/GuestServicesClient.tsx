@@ -151,8 +151,8 @@ export default function GuestServicesPage() {
                     {service.guest_note || service.service.service_type.name}
                   </div>
                   <div className="text-sm text-gray-500">
-                    Số lượng: {service.quantity} | Tổng: $
-                    {service.total_price.toFixed(2)}
+                    Số lượng: {service.quantity} | Tổng:
+                    {service.total_price.toFixed(2)} VNĐ
                   </div>
                 </div>
                 <div
