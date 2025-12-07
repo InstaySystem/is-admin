@@ -35,7 +35,6 @@ export default function DashBoardPage() {
 
   return (
     <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
-      {/* ✅ 6 CARD THẲNG HÀNG */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6">
         <StatCard title="Rooms" value={data.total_rooms} icon={<FaBed />} />
         <StatCard title="Staff" value={data.total_staff} icon={<FaUsers />} />
@@ -63,7 +62,6 @@ export default function DashBoardPage() {
         />
       </div>
 
-      {/* ✅ DAILY: CỘT + ĐƯỜNG */}
       <Card className="p-6">
         <h2 className="font-bold mb-4">Daily Booking Revenue & Orders</h2>
 
@@ -88,9 +86,7 @@ export default function DashBoardPage() {
         />
       </Card>
 
-      {/* ✅ BIỂU ĐỒ TRÒN + CỘT */}
       <div className="grid md:grid-cols-3 gap-6">
-        {/* ✅ POPULAR ROOM TYPE = TRÒN % */}
         <Card className="p-6 flex flex-col items-center gap-4">
           <h2 className="font-bold self-start">Popular Room Types (%)</h2>
 
@@ -113,7 +109,6 @@ export default function DashBoardPage() {
             ]}
             width={400}
             height={300}
-            // ✅ ẨN TOÀN BỘ CHÚ THÍCH BÊN PHẢI
             slotProps={{
               legend: {
                 sx: {
