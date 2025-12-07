@@ -6,6 +6,7 @@ export interface Room {
   slug: string;
   created_at: string;
   updated_at: string;
+  in_use: boolean;
 
   room_type_id: string;
   floor_id: string;

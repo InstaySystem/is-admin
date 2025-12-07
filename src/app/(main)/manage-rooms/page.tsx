@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Table, Space, Button, Input, Select } from "antd";
+import { Table, Tag, Space, Button, Input, Select } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { getFloors } from "@/apis/floor";
 import { getRooms, deleteRoom, createRoom, updateRoom } from "@/apis/room";
@@ -23,6 +23,7 @@ export default function ManageRoom() {
 
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [floors, setFloors] = useState<Floor[]>([]);
+  const [inUse, setInUse] = useState<boolean | undefined>();
 
   const [alert, setAlert] = useState({
     open: false,
@@ -76,6 +77,7 @@ export default function ManageRoom() {
         floor_id: floorId,
         order: "desc",
         sort: "created_at",
+        in_use: inUse,
       });
 
       setRooms(response.data.data.rooms || []);
@@ -84,7 +86,7 @@ export default function ManageRoom() {
       showAlert("error", err.message || "Lỗi tải danh sách phòng");
     }
     setLoading(false);
-  }, [page, limit, search, roomTypeId, floorId]);
+  }, [page, limit, search, roomTypeId, floorId, inUse]);
 
   useEffect(() => {
     fetchFloors();
@@ -162,12 +164,21 @@ export default function ManageRoom() {
       render: (_: any, record: Room) =>
         record.floor ? (
           <span>
-            {typeof record.floor === "string"
-              ? record.floor
-              : record.floor}
+            {typeof record.floor === "string" ? record.floor : record.floor}
           </span>
         ) : (
           "—"
+        ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "in_use",
+      key: "in_use",
+      render: (active: boolean) =>
+        active ? (
+          <Tag color="blue">Đang ở</Tag>
+        ) : (
+          <Tag color="green">Trống</Tag>
         ),
     },
     {
@@ -248,6 +259,27 @@ export default function ManageRoom() {
               label: f.name,
               value: f.id,
             }))}
+          />
+
+          <Select
+            allowClear
+            placeholder="Trạng thái"
+            className="min-w-[150px]"
+            value={inUse}
+            onChange={(value) => {
+              setInUse(value);
+              setPage(1);
+            }}
+            options={[
+              {
+                label: "Đang ở",
+                value: true,
+              },
+              {
+                label: "Trống",
+                value: false,
+              },
+            ]}
           />
         </div>
 

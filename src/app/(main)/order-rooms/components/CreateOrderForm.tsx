@@ -39,7 +39,9 @@ export default function CreateOrderForm() {
     const fetchData = async () => {
       try {
         setLoadingData(true);
-        const roomsRes = await getRooms();
+        const roomsRes = await getRooms({
+          in_use: false,
+        });
         setRooms(roomsRes.data.data.rooms);
 
         const bookingsRes = await getBookings();
