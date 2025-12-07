@@ -33,6 +33,7 @@ export default function Header() {
 
   const { messages = [] } = useMessageStore();
   const unreadMessagesCount = messages.length;
+  const isAdmin = useAppStore.getState()._role === "admin";
 
   useEffect(() => {
     const fetchUnread = async () => {
@@ -143,22 +144,26 @@ export default function Header() {
 
         <div className="flex items-center gap-5">
           {/* <Badge count={unreadMessagesCount} size="small"> */}
-          <IoChatbubbleOutline
-            onClick={() => router.push("/chat")}
-            className="text-2xl text-black cursor-pointer hover:text-blue-600"
-          />
+          {!isAdmin && (
+            <IoChatbubbleOutline
+              onClick={() => router.push("/chat")}
+              className="text-2xl text-black cursor-pointer hover:text-blue-600"
+            />
+          )}
           {/* </Badge> */}
 
-          <Dropdown
-            overlay={notificationMenu}
-            trigger={["click"]}
-            placement="bottomRight"
-            onOpenChange={handleOpenChange}
-          >
-            <Badge count={unreadCount} size="small">
-              <IoNotificationsOutline className="text-2xl cursor-pointer text-black hover:text-blue-600" />
-            </Badge>
-          </Dropdown>
+          {!isAdmin && (
+            <Dropdown
+              overlay={notificationMenu}
+              trigger={["click"]}
+              placement="bottomRight"
+              onOpenChange={handleOpenChange}
+            >
+              <Badge count={unreadCount} size="small">
+                <IoNotificationsOutline className="text-2xl cursor-pointer text-black hover:text-blue-600" />
+              </Badge>
+            </Dropdown>
+          )}
 
           {user && (
             <Dropdown
