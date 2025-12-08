@@ -2,14 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import {
-  Table,
-  Button,
-  Input,
-  Select,
-  DatePicker,
-  Pagination,
-} from "antd";
+import { Table, Button, Input, Select, DatePicker, Pagination } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { getRequestsForAdmin } from "@/apis/request";
 import dayjs from "dayjs";
@@ -85,8 +78,8 @@ export default function ManageRequestPage() {
     },
     {
       title: "Loại yêu cầu",
-      key: "request_type_name",
-      render: (_: any, record: any) => <span>{record.request_type_name}</span>,
+      key: "request_type",
+      render: (_: any, record: any) => <span>{record.request_type}</span>,
     },
     {
       title: "Thời gian",
@@ -113,31 +106,18 @@ export default function ManageRequestPage() {
 
   return (
     <div style={{ padding: 24 }}>
-      <div className="flex flex-wrap gap-3 justify-between items-start mb-4">
-        <div className="flex flex-wrap gap-3 items-center flex-1">
+      <div className="flex flex-wrap gap-3 justify-between mb-4">
+        <div className="flex flex-wrap gap-3">
           <Input.Search
             placeholder="Tìm kiếm nội dung hoặc code..."
             allowClear
             value={search}
-            className="min-w-[200px] w-[250px]"
+            className="w-[260px]"
             onChange={(e) => {
               setSearch(e.target.value);
               setPage(1);
             }}
           />
-          <Button
-            type="primary"
-            className="bg-[#608DBC]!"
-            onClick={() => {
-              router.push("/manage-requests/request-types");
-            }}
-          >
-            Loại yêu cầu
-          </Button>
-
-          <Button type="primary" className="bg-[#608DBC]!" onClick={() => {}}>
-            Tạo yêu cầu
-          </Button>
 
           <Select
             placeholder="Trạng thái"
@@ -170,6 +150,22 @@ export default function ManageRequestPage() {
               setPage(1);
             }}
           />
+        </div>
+
+        <div className="flex gap-3">
+          <Button
+            type="primary"
+            className="bg-[#608DBC]!"
+            onClick={() => {
+              router.push("/manage-requests/request-types");
+            }}
+          >
+            Loại yêu cầu
+          </Button>
+
+          <Button type="primary" className="bg-[#608DBC]!">
+            Tạo yêu cầu
+          </Button>
         </div>
       </div>
 

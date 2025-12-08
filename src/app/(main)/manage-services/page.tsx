@@ -42,13 +42,23 @@ export default function ManageService() {
     setAlert({ open: true, type, message });
   };
 
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const fetchServices = useCallback(async () => {
     setLoading(true);
     try {
       const response = await getServices({
         page,
         limit,
-        search,
+        search: debouncedSearch,
         service_type_id: serviceTypeId,
         is_active: isActive,
         sort: "created_at",
@@ -60,7 +70,7 @@ export default function ManageService() {
       message.error(err.message || "Lỗi tải danh sách dịch vụ");
     }
     setLoading(false);
-  }, [page, limit, search, serviceTypeId, isActive]);
+  }, [page, limit, debouncedSearch, serviceTypeId, isActive]);
 
   const fetchServiceTypes = useCallback(async () => {
     try {

@@ -177,22 +177,6 @@ export default function OrderServicesPage() {
             ]}
           />
         </div>
-
-        <Button
-          type="default"
-          className="border-[#608DBC] text-[#608DBC]"
-          onClick={() => {
-            setSearch("");
-            setStatus(undefined);
-            setSort("created_at");
-            setOrder("desc");
-            setDateRange(null);
-            setPage(1);
-            fetchOrderServices();
-          }}
-        >
-          Reset
-        </Button>
       </div>
       <Table
         columns={columns}
