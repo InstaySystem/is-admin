@@ -24,3 +24,7 @@ export const deleteUser = (userId: number) => {
 export const createUser = (data: CreateUserRequest) => {
   return axiosRequest.post("/admin/users", data);
 };
+
+export const changeUserPassword = (id: number, new_password: string) => {
+  return axiosRequest.put(`/admin/users/${id}/password`, { new_password });
+};

@@ -4,12 +4,19 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { FaPen } from "react-icons/fa";
-import { getUserById, updateUser, getRoles, deleteUser } from "@/apis/user";
+import {
+  getUserById,
+  updateUser,
+  getRoles,
+  deleteUser,
+  changeUserPassword,
+} from "@/apis/user";
 import { Department, UpdateUserRequest, User } from "@/types/user";
 import DepartmentModal from "@/app/(main)/profile/components/DepartmentModal";
 import CustomAlert from "@/components/ui/CustomAlert";
 import { Button, CircularProgress, Switch } from "@mui/material";
 import CommonModal from "@/components/modals/CommonModal";
+import ChangePasswordModal from "../../components/ChangePasswordModal";
 
 export default function EditUserPage() {
   const router = useRouter();
@@ -26,6 +33,8 @@ export default function EditUserPage() {
     message: "",
   });
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
+    useState(false);
 
   const fetchUser = async () => {
     try {
@@ -65,8 +74,22 @@ export default function EditUserPage() {
     try {
       const res = await deleteUser(userId);
       showAlert("success", res.data.message);
+      setTimeout(() => {
+        router.push("/staff");
+      }, 1500);
     } catch (error: any) {
       showAlert("error", error.message);
+    }
+  };
+
+  const handleChangePassword = async (newPassword: string) => {
+    const new_password = newPassword;
+    try {
+      const res = await changeUserPassword(userId, new_password);
+      showAlert("success", res.data.message || "Đổi mật khẩu thành công");
+      setIsChangePasswordModalOpen(false);
+    } catch (error: any) {
+      showAlert("error", error.message || "Đổi mật khẩu thất bại");
     }
   };
 
@@ -120,10 +143,6 @@ export default function EditUserPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleChangePassword = () => {
-    router.push(`/staff/${userId}/change-password`);
   };
 
   return (
@@ -299,7 +318,7 @@ export default function EditUserPage() {
 
             <div className="flex justify-end items-center gap-3 mt-6">
               <button
-                onClick={handleChangePassword}
+                onClick={() => setIsChangePasswordModalOpen(true)}
                 className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
               >
                 Đổi mật khẩu
@@ -329,6 +348,12 @@ export default function EditUserPage() {
             title="Bạn có chắc chắn muốn xóa nhân viên này không?"
             onClose={() => setIsDeleteModalOpen(false)}
             onOk={handleDeleteUser}
+          />
+
+          <ChangePasswordModal
+            open={isChangePasswordModalOpen}
+            onClose={() => setIsChangePasswordModalOpen(false)}
+            onSubmit={handleChangePassword}
           />
         </div>
       </div>
