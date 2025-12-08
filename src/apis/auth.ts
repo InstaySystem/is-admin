@@ -91,3 +91,10 @@ export const updateInfo = (data: {
 }) => {
   return axiosRequest.post("/auth/update-info", data);
 };
+
+export const changePassword = (data: {
+  old_password: string;
+  new_password: string;
+}) => {
+  return axiosRequest.post("/auth/change-password", data);
+};
