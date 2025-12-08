@@ -125,7 +125,7 @@ export default function GuestServicePage() {
                   <div>
                     <p className="font-semibold">{svc.name}</p>
                     <Tag color="blue" className="mt-2">
-                      {svc.price.toLocaleString()} VND
+                      {svc.price.toLocaleString()}₫
                     </Tag>
                   </div>
 

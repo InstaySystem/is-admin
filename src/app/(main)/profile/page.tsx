@@ -121,7 +121,7 @@ export default function ProfilePage() {
         )}
         <div className="bg-white shadow-md rounded-lg p-10 w-full max-w-4xl">
           <div className="flex items-center gap-6 mb-10">
-            <div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center text-white text-3xl font-bold">
+            <div className="w-24 h-24 rounded-full bg-[#608dbc] flex items-center justify-center text-white text-3xl font-bold">
               {user?.first_name?.charAt(0) || "U"}
               {user?.last_name?.charAt(0) || ""}
             </div>

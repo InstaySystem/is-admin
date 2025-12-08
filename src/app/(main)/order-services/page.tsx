@@ -53,13 +53,13 @@ export default function OrderServicesPage() {
   const columns = [
     {
       title: "Dịch vụ",
-      dataIndex: "service_name",
-      key: "service_name",
+      dataIndex: "service",
+      key: "service",
     },
     {
       title: "Phòng",
-      dataIndex: "room_name",
-      key: "room_name",
+      dataIndex: "room",
+      key: "room",
     },
     {
       title: "Số lượng",

@@ -4,7 +4,6 @@
 
 import {
   Table,
-  Space,
   Button,
   Input,
   Select,
@@ -25,7 +24,6 @@ export default function ManageRequestPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [fromTo, setFromTo] = useState<[string, string] | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
@@ -62,9 +60,9 @@ export default function ManageRequestPage() {
 
   const columns = [
     {
-      title: "Tên phòng",
-      dataIndex: "room_name",
-      key: "room_name",
+      title: "Phòng",
+      dataIndex: "room",
+      key: "room",
       render: (text: string) => <span className="font-medium">{text}</span>,
     },
     {

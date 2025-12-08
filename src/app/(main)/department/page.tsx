@@ -123,9 +123,9 @@ export default function DepartmentPage() {
                 {iconList[index % iconList.length]}
                 <div>
                   <h2 className="text-lg font-semibold text-gray-800">
-                    {dep.name}
+                    {dep.display_name}
                   </h2>
-                  <p className="text-gray-600 text-sm">{dep.display_name}</p>
+                  <p className="text-gray-600 text-sm">{dep.name}</p>
                 </div>
               </div>
 

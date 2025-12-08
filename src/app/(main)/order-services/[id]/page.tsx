@@ -143,11 +143,11 @@ export default function OrderServiceDetailPage() {
             </p>
             <p>
               <span className="font-semibold">Giá:</span>{" "}
-              {service?.price.toLocaleString()}đ
+              {service?.price.toLocaleString()}₫
             </p>
             <p>
               <span className="font-semibold">Tổng tiền:</span>{" "}
-              {total_price.toLocaleString()} VND
+              {total_price.toLocaleString()}₫
             </p>
           </div>
 

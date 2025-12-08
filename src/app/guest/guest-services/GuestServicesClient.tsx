@@ -197,7 +197,7 @@ export default function GuestServicesPage() {
               </p>
               <p>
                 <span className="font-medium">Tổng giá:</span>
-                {selectedService.total_price.toFixed(2)} VND
+                {selectedService.total_price.toFixed(2)}₫
               </p>
               <p>
                 <span className="font-medium">Nội dung của khách:</span>{" "}
