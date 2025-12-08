@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Table, Button, Input, Select, DatePicker, Pagination } from "antd";
+import { Table, Button, Select, DatePicker, Pagination } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { getRequestsForAdmin } from "@/apis/request";
 import dayjs from "dayjs";
@@ -14,7 +14,6 @@ export default function ManageRequestPage() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [fromTo, setFromTo] = useState<[string, string] | null>(null);
 
@@ -29,7 +28,6 @@ export default function ManageRequestPage() {
       const params: any = {
         page,
         limit,
-        search: search || undefined,
         status: status || undefined,
         from: fromTo?.[0],
         to: fromTo?.[1],
@@ -45,7 +43,7 @@ export default function ManageRequestPage() {
       console.error("Error fetching requests:", error);
     }
     setLoading(false);
-  }, [page, limit, search, status, fromTo]);
+  }, [page, limit, status, fromTo]);
 
   useEffect(() => {
     fetchRequests();
@@ -108,17 +106,6 @@ export default function ManageRequestPage() {
     <div style={{ padding: 24 }}>
       <div className="flex flex-wrap gap-3 justify-between mb-4">
         <div className="flex flex-wrap gap-3">
-          <Input.Search
-            placeholder="Tìm kiếm nội dung hoặc code..."
-            allowClear
-            value={search}
-            className="w-[260px]"
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
-
           <Select
             placeholder="Trạng thái"
             allowClear

@@ -3,7 +3,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Table, Space, Button, Input, Select, DatePicker, Tag } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
 import { getOrderServiceForAdmin } from "@/apis/order_service";
 const { RangePicker } = DatePicker;
 
@@ -16,7 +15,6 @@ export default function OrderServicesPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
-  const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string | undefined>(undefined);
   const [sort, setSort] = useState<string | undefined>("created_at");
   const [order, setOrder] = useState<string | undefined>("desc");
@@ -29,7 +27,6 @@ export default function OrderServicesPage() {
       const res = await getOrderServiceForAdmin({
         page,
         limit,
-        search,
         status,
         sort,
         order,
@@ -43,7 +40,7 @@ export default function OrderServicesPage() {
       console.error("Fetch error:", err.message);
     }
     setLoading(false);
-  }, [page, limit, search, status, sort, order, dateRange]);
+  }, [page, limit, status, sort, order, dateRange]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -117,24 +114,6 @@ export default function OrderServicesPage() {
     <div className="p-6 text-lg">
       <div className="flex flex-wrap gap-3 justify-between items-start mb-4 text-lg">
         <div className="flex flex-wrap gap-3 items-center flex-1">
-          <Space.Compact className="min-w-[250px] w-[300px]">
-            <Input
-              placeholder="Tìm kiếm..."
-              allowClear
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <Button
-              type="primary"
-              icon={<SearchOutlined />}
-              className="bg-[#608DBC]!"
-              onClick={() => {
-                setPage(1);
-                fetchOrderServices();
-              }}
-            />
-          </Space.Compact>
-
           <Select
             allowClear
             placeholder="Trạng thái"

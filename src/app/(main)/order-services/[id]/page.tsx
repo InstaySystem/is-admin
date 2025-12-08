@@ -56,6 +56,7 @@ export default function OrderServiceDetailPage() {
     quantity,
     order_room,
     service,
+    updated_by,
   } = data;
 
   const statusColor = {
@@ -128,14 +129,21 @@ export default function OrderServiceDetailPage() {
               <span className="font-semibold">Cập nhật:</span>{" "}
               {new Date(updated_at).toLocaleString()}
             </p>
-            <p>
-              <span className="font-semibold">Số lượng:</span> {quantity}
-            </p>
+            {updated_by?.id && (
+              <p>
+                <span className="font-semibold">Người cập nhật:</span>{" "}
+                {updated_by.first_name} {updated_by.last_name} (
+                {updated_by.username})
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
             <p>
               <span className="font-semibold">Dịch vụ:</span> {service?.name}
+            </p>
+            <p>
+              <span className="font-semibold">Số lượng:</span> {quantity}
             </p>
             <p>
               <span className="font-semibold">Loại dịch vụ:</span>{" "}

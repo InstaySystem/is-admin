@@ -45,6 +45,7 @@ export default function RequestDetailPage() {
     updated_at,
     order_room,
     request_type,
+    updated_by,
   } = data;
 
   const statusColor: Record<string, string> = {
@@ -118,6 +119,13 @@ export default function RequestDetailPage() {
               <span className="font-semibold">Cập nhật:</span>{" "}
               {new Date(updated_at).toLocaleString()}
             </p>
+            {updated_by?.id && (
+              <p>
+                <span className="font-semibold">Người cập nhật:</span>{" "}
+                {updated_by.first_name} {updated_by.last_name} (
+                {updated_by.username})
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -134,7 +142,7 @@ export default function RequestDetailPage() {
             <p className="font-semibold mb-1">Phòng:</p>
             <p>
               {order_room?.room?.name} — Tầng{" "}
-              {order_room?.room?.floor?.name || "Không xác định"}
+              {order_room?.room?.floor || "Không xác định"}
             </p>
           </div>
         </div>
