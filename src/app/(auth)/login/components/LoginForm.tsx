@@ -74,13 +74,11 @@ export default function LoginForm() {
 
           <input
             {...register("username")}
-            placeholder="Username"
-            className="w-full pl-10 pr-10 py-3 border-2 rounded-lg
+            placeholder="Tài khoản"
+            className="w-full pl-10 pr-10 py-2 border-2 rounded-lg
                        outline-none focus:ring focus:ring-blue-300
                        border-gray-300 bg-gray-100"
           />
-
-          <FaUser className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg" />
 
           {errors.username && (
             <p className="text-red-500 text-sm mt-1">
@@ -96,7 +94,7 @@ export default function LoginForm() {
             {...register("password")}
             type={showPassword ? "text" : "password"}
             placeholder="Mật khẩu"
-            className="w-full pl-10 pr-10 py-3 border-2 rounded-lg 
+            className="w-full pl-10 pr-10 py-2 border-2 rounded-lg 
                        outline-none focus:ring focus:ring-blue-300
                        border-gray-300 bg-gray-100"
           />
@@ -139,8 +137,8 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-blue-400 text-white py-4 rounded-lg 
-                     font-medium hover:bg-blue-700 transition flex gap-2 justify-center items-center text-lg"
+          className="w-full bg-[#608dbc] text-white py-2 rounded-lg 
+                     font-medium flex gap-2 justify-center items-center text-lg"
         >
           <FiLogIn />
           {isSubmitting ? "Đang xử lý..." : "Đăng nhập"}

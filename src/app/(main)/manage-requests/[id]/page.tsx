@@ -50,8 +50,8 @@ export default function RequestDetailPage() {
 
   const statusColor: Record<string, string> = {
     pending: "gold",
-    accepted: "green",
-    done: "blue",
+    accepted: "blue",
+    done: "green",
   };
 
   const handleUpdateStatus = async () => {

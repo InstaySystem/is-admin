@@ -39,7 +39,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <div className="w-1/2 bg-white p-10 flex flex-col justify-center">
+        <div className="w-1/2 bg-white px-16 py-10 flex flex-col justify-center">
           {children}
         </div>
       </div>

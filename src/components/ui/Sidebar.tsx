@@ -98,12 +98,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
   return (
     <motion.div
-      animate={{ width: isOpen ? 240 : 70 }}
-      className="h-screen bg-white shadow-md flex flex-col overflow-hidden relative text-black transition-all duration-300"
+      animate={{ width: isOpen ? 200 : 52 }}
+      className="h-screen bg-white shadow-md flex flex-col overflow-hidden relative text-black transition-all duration-200"
     >
-      <div className="flex h-[65px] items-center px-2 border-b border-gray-200">
+      <div className="flex h-[57px] items-center px-2 border-b border-gray-200">
         <button
-          className="p-2 focus:outline-none cursor-pointer"
+          className="p-1.5 focus:outline-none cursor-pointer"
           onClick={toggle}
         >
           <FiMenu size={24} />

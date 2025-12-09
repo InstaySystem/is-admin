@@ -136,8 +136,8 @@ export default function Header() {
 
   return (
     <header className="w-full bg-white shadow-md border-b sticky top-0 z-40">
-      <div className="flex items-center justify-between px-8 py-4">
-        <h1 className="text-2xl font-semibold text-gray-900">Trang quản lý</h1>
+      <div className="flex items-center justify-between px-8 py-3">
+        <h1 className="text-xl font-semibold text-gray-900">Admin page</h1>
 
         <div className="flex items-center gap-5">
           {!isAdmin && (
@@ -160,7 +160,7 @@ export default function Header() {
               placement="bottomRight"
             >
               <Button type="text" className="flex items-center gap-3">
-                <Avatar size={42} className="bg-[#608DBC]! text-white">
+                <Avatar size={36} className="bg-[#608DBC]! text-white">
                   {user.first_name?.[0]}
                   {user.last_name?.[0]}
                 </Avatar>

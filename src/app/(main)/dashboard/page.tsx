@@ -211,7 +211,7 @@ export default function DashBoardPage() {
     datasets: [
       {
         data: data.popular_room_type_stats.map((stat) => stat.percentage),
-        backgroundColor: [COLORS.success, COLORS.warning, COLORS.purple],
+        backgroundColor: [COLORS.primary, COLORS.secondary, COLORS.info, COLORS.pink],
         borderWidth: 0,
         hoverOffset: 15,
       },
