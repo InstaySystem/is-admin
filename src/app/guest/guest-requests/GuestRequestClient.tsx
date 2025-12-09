@@ -113,9 +113,13 @@ export default function GuestRequestsPage() {
               </div>
               <div
                 className={`text-sm font-medium ${
-                  request.status === "pending"
+                  request.status === "accepted"
                     ? "text-blue-500"
-                    : "text-gray-400"
+                    : request.status === "cancelled"
+                    ? "text-gray-400"
+                    : request.status === "done"
+                    ? "text-green-500"
+                    : "text-yellow-500"
                 }`}
               >
                 {request.status}

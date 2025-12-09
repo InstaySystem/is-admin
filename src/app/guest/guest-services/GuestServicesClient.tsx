@@ -157,9 +157,13 @@ export default function GuestServicesPage() {
                 </div>
                 <div
                   className={`text-sm font-medium ${
-                    service.status === "pending"
+                    service.status === "accepted"
                       ? "text-blue-500"
-                      : "text-gray-400"
+                      : service.status === "cancelled"
+                      ? "text-gray-400"
+                      : service.status === "rejected"
+                      ? "text-red-500"
+                      : "text-yellow-500"
                   }`}
                 >
                   {service.status}

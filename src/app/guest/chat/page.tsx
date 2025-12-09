@@ -419,7 +419,7 @@ export default function GuestChat() {
                       </div>
 
                       <div className="flex-1">
-                        <div className="text-sm text-gray-900 break-words">
+                        <div className="text-sm text-gray-900 wrap-break-words">
                           {msg.content}
                         </div>
                         <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">

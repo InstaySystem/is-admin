@@ -10,6 +10,7 @@ import { getServiceTypesBySlug } from "@/apis/service_types";
 import { useRouter } from "next/navigation";
 import { getRequestTypesForGuest } from "@/apis/request_type";
 import CreateRequestModal from "./components/CreateRequestModal";
+import Image from "next/image";
 
 export default function GuestServicePage() {
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
@@ -69,9 +70,17 @@ export default function GuestServicePage() {
   }, []);
 
   return (
-    <div className="p-4 min-h-screen bg-gray-50 space-y-6">
-      <header className="text-center text-2xl font-bold">
-        Instay
+    <div className="p-4 min-h-screen bg-gray-50 space-y-3">
+      <header className="text-center text-2xl font-bold text-black flex justify-center">
+        <div className="md:w-40 w-20">
+          <Image
+            className="object-cover"
+            src="/images/logo.jpg"
+            width={100}
+            height={100}
+            alt="logo"
+          />
+        </div>
       </header>
 
       <section>

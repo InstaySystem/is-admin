@@ -12,6 +12,7 @@ import CustomAlert from "@/components/ui/CustomAlert";
 import CommonModal from "@/components/modals/CommonModal";
 import { SearchOutlined } from "@ant-design/icons";
 import RoomModal from "./components/RoomModal";
+import { useAppStore } from "@/stores/useAppStore";
 
 export default function ManageRoom() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -30,6 +31,8 @@ export default function ManageRoom() {
     type: "success" as "success" | "error" | "info" | "warning",
     message: "",
   });
+
+  const isAdmin = useAppStore((s) => s._role) === "admin";
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
@@ -206,6 +209,10 @@ export default function ManageRoom() {
     },
   ];
 
+  const filteredColumns = isAdmin
+    ? columns
+    : columns.filter((col) => col.key !== "action");
+
   return (
     <div style={{ padding: 24 }} className="text-lg">
       <div className="flex flex-wrap gap-3 justify-between items-start mb-4 text-lg">
@@ -283,21 +290,30 @@ export default function ManageRoom() {
           />
         </div>
 
-        <Button type="primary" className="bg-[#608DBC]!" onClick={handleCreate}>
-          Thêm phòng
-        </Button>
-
-        <Button
-          type="primary"
-          className="bg-[#608DBC]!"
-          onClick={() => (window.location.href = "/manage-rooms/room-types")}
-        >
-          Loại phòng
-        </Button>
+        {isAdmin && (
+          <>
+            <Button
+              type="primary"
+              className="bg-[#608DBC]!"
+              onClick={handleCreate}
+            >
+              Thêm phòng
+            </Button>
+            <Button
+              type="primary"
+              className="bg-[#608DBC]!"
+              onClick={() =>
+                (window.location.href = "/manage-rooms/room-types")
+              }
+            >
+              Loại phòng
+            </Button>
+          </>
+        )}
       </div>
 
       <Table
-        columns={columns}
+        columns={filteredColumns}
         dataSource={rooms}
         loading={loading}
         pagination={{
@@ -324,7 +340,6 @@ export default function ManageRoom() {
         onOk={handleDelete}
       />
 
-      {/* ROOM MODAL */}
       <RoomModal
         open={roomModalOpen}
         mode={roomModalMode}

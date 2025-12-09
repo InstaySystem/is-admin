@@ -11,6 +11,7 @@ import { Service, ServiceType } from "@/types/service";
 import { SearchOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import CommonModal from "@/components/modals/CommonModal";
+import { useAppStore } from "@/stores/useAppStore";
 
 export default function ManageService() {
   const [services, setServices] = useState<Service[]>([]);

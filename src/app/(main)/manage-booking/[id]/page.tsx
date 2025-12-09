@@ -1,13 +1,17 @@
-/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getBookingById } from "@/apis/booking";
 import { Booking } from "@/types/booking";
-import { Descriptions, Spin, Divider, Button } from "antd";
-import { List, Tag } from "antd";
+import { Descriptions, Spin, Divider, Button, message } from "antd";
+import { List } from "antd";
 import dayjs from "dayjs";
+import CreateOrderRoomModal from "../../order-rooms/components/CreateOrderRoomModal";
+import { Room } from "@/types/room";
+import { getRooms } from "@/apis/room";
+import { createOrderRoomAdmin } from "@/apis/order_room";
 
 export default function BookingDetailPage() {
   const params = useParams();
@@ -16,17 +20,21 @@ export default function BookingDetailPage() {
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [rooms, setRooms] = useState<Room[]>([]);
+
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     if (!bookingId) return;
 
     const fetchBooking = async () => {
-      setLoading(true);
       try {
+        setLoading(true);
         const res = await getBookingById(bookingId);
         setBooking(res.data.data.booking);
-      } catch (err) {
-        console.error(err);
+      } catch (err: any) {
+        messageApi.error(err.message || "Lỗi tải booking");
       } finally {
         setLoading(false);
       }
@@ -34,6 +42,57 @@ export default function BookingDetailPage() {
 
     fetchBooking();
   }, [bookingId]);
+
+  useEffect(() => {
+    if (!booking?.room_type) return;
+
+    const fetchRooms = async () => {
+      try {
+        setLoading(true);
+
+        const res = await getRooms({
+          in_use: false,
+          room_type_name: booking.room_type,
+        });
+
+        setRooms(res.data.data.rooms);
+      } catch (err: any) {
+        messageApi.error(err.message || "Lỗi tải danh sách phòng");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, [booking?.room_type]);
+
+  const handleCreateOrder = async (roomId: number) => {
+    if (!booking) return;
+
+    try {
+      messageApi.open({ type: "loading", content: "Đang tạo đơn phòng..." });
+
+      const res = await createOrderRoomAdmin({
+        booking_id: booking.id,
+        room_id: roomId,
+      });
+
+      const orderId = res.data.data.id;
+      const qr = res.data.data.secret_code;
+
+      messageApi.destroy();
+      messageApi.success("Tạo đơn phòng thành công!");
+
+      router.push(
+        `/order-rooms/detail/${orderId}?qr=${encodeURIComponent(qr)}`
+      );
+    } catch (err: any) {
+      messageApi.destroy();
+      messageApi.error(err.message || "Lỗi tạo đơn phòng");
+    } finally {
+      setModalOpen(false);
+    }
+  };
 
   if (loading || !booking) {
     return (
@@ -45,14 +104,13 @@ export default function BookingDetailPage() {
 
   return (
     <div className="p-6 bg-[#f5f5f5] min-h-screen">
+      {contextHolder}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl text-black font-bold">Chi tiết booking</h2>
         <Button
           type="primary"
           className="bg-[#608DBC]!"
-          onClick={() =>
-            router.push(`/order-rooms/create?booking_id=${booking.id}`)
-          }
+          onClick={() => setModalOpen(true)}
         >
           Tạo đơn đặt phòng
         </Button>
@@ -131,7 +189,9 @@ export default function BookingDetailPage() {
                   <Button
                     type="link"
                     key="view"
-                    onClick={() => router.push(`/order-rooms/detail/${item.id}`)}
+                    onClick={() =>
+                      router.push(`/order-rooms/detail/${item.id}`)
+                    }
                   >
                     Xem chi tiết
                   </Button>,
@@ -158,6 +218,13 @@ export default function BookingDetailPage() {
       ) : (
         <></>
       )}
+
+      <CreateOrderRoomModal
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onOk={handleCreateOrder}
+        rooms={rooms}
+      />
     </div>
   );
 }

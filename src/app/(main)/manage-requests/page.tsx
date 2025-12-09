@@ -7,10 +7,12 @@ import { useCallback, useEffect, useState } from "react";
 import { getRequestsForAdmin } from "@/apis/request";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { useAppStore } from "@/stores/useAppStore";
 
 const { RangePicker } = DatePicker;
 
 export default function ManageRequestPage() {
+  const isAdmin = useAppStore((s) => s._role) === "admin";
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -139,21 +141,19 @@ export default function ManageRequestPage() {
           />
         </div>
 
-        <div className="flex gap-3">
-          <Button
-            type="primary"
-            className="bg-[#608DBC]!"
-            onClick={() => {
-              router.push("/manage-requests/request-types");
-            }}
-          >
-            Loại yêu cầu
-          </Button>
-
-          <Button type="primary" className="bg-[#608DBC]!">
-            Tạo yêu cầu
-          </Button>
-        </div>
+        {isAdmin && (
+          <div className="flex gap-3">
+            <Button
+              type="primary"
+              className="bg-[#608DBC]!"
+              onClick={() => {
+                router.push("/manage-requests/request-types");
+              }}
+            >
+              Loại yêu cầu
+            </Button>
+          </div>
+        )}
       </div>
 
       <Table

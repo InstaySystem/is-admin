@@ -8,7 +8,6 @@ import CustomAlert from "@/components/ui/CustomAlert";
 import { getServicesBySlug } from "@/apis/services";
 import { generateViewPresignedUrls } from "@/apis/file";
 import { createOrderService } from "@/apis/order_room";
-import Image from "next/image";
 
 interface OrderServiceFormValues {
   quantity: number;
@@ -82,12 +81,18 @@ export default function DetailGuestServicePage() {
   const onOrderSubmit = async (data: OrderServiceFormValues) => {
     if (!originalData) return;
     setModalLoading(true);
+
+    const payload: any = {
+      service_id: originalData.id,
+      quantity: data.quantity,
+    };
+
+    if (data.guest_note && data.guest_note.trim() !== "") {
+      payload.guest_note = data.guest_note.trim();
+    }
+
     try {
-      const res = await createOrderService({
-        service_id: originalData.id,
-        quantity: data.quantity,
-        guest_note: data.guest_note,
-      });
+      const res = await createOrderService(payload);
       showAlert("success", res.data.message || "Đặt dịch vụ thành công");
       setIsModalOpen(false);
       const id = res.data.data.id;

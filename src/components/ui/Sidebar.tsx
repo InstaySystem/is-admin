@@ -7,7 +7,6 @@ import {
   FaChartLine,
   FaUsers,
   FaCog,
-  FaUser,
   FaRestroom,
   FaRegQuestionCircle,
   FaBookMedical,
@@ -18,7 +17,7 @@ import { FiMenu } from "react-icons/fi";
 import Image from "next/image";
 
 import { useAppStore } from "@/stores/useAppStore";
-import { use } from "react";
+import { IoChatbubble } from "react-icons/io5";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -26,48 +25,76 @@ interface SidebarProps {
 }
 
 const menuItems = [
-  { name: "Dashboard", icon: <FaChartLine />, path: "/dashboard" },
-  { name: "Booking", icon: <FaBookMedical />, path: "/manage-booking" },
-  { name: "Rooms", icon: <FaRestroom />, path: "/manage-rooms" },
-  { name: "Services", icon: <FaCog />, path: "/manage-services" },
+  {
+    name: "Dashboard",
+    icon: <FaChartLine />,
+    path: "/dashboard",
+    rolesAllowed: ["admin"],
+  },
+  {
+    name: "Booking",
+    icon: <FaBookMedical />,
+    path: "/manage-booking",
+  },
+  {
+    name: "Rooms",
+    icon: <FaRestroom />,
+    path: "/manage-rooms",
+  },
+  {
+    name: "Services",
+    icon: <FaCog />,
+    path: "/manage-services",
+    rolesAllowed: ["admin"],
+  },
   {
     name: "Order Services",
     icon: <FaFirstOrderAlt />,
     path: "/order-services",
   },
-
   {
     name: "Request",
     icon: <FaRegQuestionCircle />,
     path: "/manage-requests",
   },
-  { name: "Staff", icon: <FaUsers />, path: "/staff", role: "admin-only" },
+  {
+    name: "Staff",
+    icon: <FaUsers />,
+    path: "/staff",
+    rolesAllowed: ["admin"],
+  },
   {
     name: "Department",
     icon: <FaUsers />,
     path: "/department",
-    role: "admin-only",
+    rolesAllowed: ["admin"],
   },
   {
     name: "Review",
     icon: <FaComments />,
     path: "/reviews",
-    role: "staff-customer-care",
+    rolesAllowed: ["staff-customer-care", "admin"],
   },
-
-  { name: "Profile", icon: <FaUser />, path: "/profile" },
+  {
+    name: "Chat",
+    icon: <IoChatbubble />,
+    path: "/chat",
+    rolesExclude: ["admin"],
+  },
 ];
 
 export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   const pathname = usePathname();
-  const role = useAppStore((state) => state._role);
+  const role = useAppStore((state) => state._role)?.toString();
+  let filteredMenu = null;
 
-  const filteredMenu = menuItems.filter((item) => {
-    if (item.role === "admin-only" && role !== "admin") return false;
-    if (item.role === "staff-customer-care" && role !== "staff-customer-care")
-      return false;
-    return true;
-  });
+  if (role) {
+    filteredMenu = menuItems.filter((item) => {
+      if (item.rolesAllowed && !item.rolesAllowed.includes(role)) return false;
+      if (item.rolesExclude && item.rolesExclude.includes(role)) return false;
+      return true;
+    });
+  }
 
   return (
     <motion.div
@@ -103,7 +130,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       </div>
 
       <nav className="flex-1 mt-4">
-        {filteredMenu.map((item) => {
+        {filteredMenu?.map((item) => {
           const isActive = pathname === item.path;
           return (
             <Link href={item.path} key={item.name}>

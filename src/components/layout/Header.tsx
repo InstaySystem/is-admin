@@ -22,7 +22,6 @@ import {
   countUnreadNotifications,
 } from "@/apis/notification";
 import { useNotificationStore } from "@/stores/useNotificationStore";
-import { useMessageStore } from "@/stores/useMessageStore";
 
 export default function Header() {
   const router = useRouter();
@@ -31,8 +30,6 @@ export default function Header() {
   const { notifications, unreadCount, setNotifications, setUnreadCount } =
     useNotificationStore();
 
-  const { messages = [] } = useMessageStore();
-  const unreadMessagesCount = messages.length;
   const isAdmin = useAppStore.getState()._role === "admin";
 
   useEffect(() => {
@@ -143,15 +140,6 @@ export default function Header() {
         <h1 className="text-2xl font-semibold text-gray-900">Trang quản lý</h1>
 
         <div className="flex items-center gap-5">
-          {/* <Badge count={unreadMessagesCount} size="small"> */}
-          {!isAdmin && (
-            <IoChatbubbleOutline
-              onClick={() => router.push("/chat")}
-              className="text-2xl text-black cursor-pointer hover:text-blue-600"
-            />
-          )}
-          {/* </Badge> */}
-
           {!isAdmin && (
             <Dropdown
               overlay={notificationMenu}
