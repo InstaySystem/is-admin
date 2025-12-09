@@ -36,8 +36,8 @@ ChartJS.register(
 );
 
 const COLORS = {
-  primary: "#3B82F6",
-  secondary: "#8B5CF6",
+  primary: "#608dbc",
+  secondary: "#b0cbe8",
   success: "#10B981",
   warning: "#F59E0B",
   danger: "#EF4444",
@@ -59,6 +59,7 @@ const COLORS = {
 interface DashboardData {
   total_staff: number;
   total_rooms: number;
+  occupied_rooms: number;
   total_services: number;
   total_bookings: number;
   booking_revenue: number;
@@ -164,8 +165,8 @@ export default function DashBoardPage() {
         label: "Revenue (₫)",
         data: data.daily_booking_stats.map((stat) => stat.revenue),
         borderColor: "#6a7282",
-        backgroundColor: "#6a7282", 
-        fill: false, 
+        backgroundColor: "#6a7282",
+        fill: false,
         tension: 0.4,
         borderWidth: 3,
         pointRadius: 4,
@@ -177,10 +178,10 @@ export default function DashBoardPage() {
         type: "bar" as const,
         label: "Bookings",
         data: data.daily_booking_stats.map((stat) => stat.booking_count),
-        backgroundColor: "#608dbc",
-        borderColor: "#608dbc",
+        backgroundColor: COLORS.primary,
+        borderColor: COLORS.primary,
         borderWidth: 1,
-        borderRadius: 4, 
+        borderRadius: 4,
         barPercentage: 0.5,
         yAxisID: "y1",
         order: 2,
@@ -193,7 +194,12 @@ export default function DashBoardPage() {
     datasets: [
       {
         data: data.revenue_source_stats.map((stat) => stat.value),
-        backgroundColor: [COLORS.primary, COLORS.secondary, COLORS.info, COLORS.pink],
+        backgroundColor: [
+          COLORS.primary,
+          COLORS.secondary,
+          COLORS.info,
+          COLORS.pink,
+        ],
         borderWidth: 0,
         hoverOffset: 15,
       },
@@ -218,7 +224,7 @@ export default function DashBoardPage() {
       {
         label: "Usage Count",
         data: data.service_usage_stats.map((stat) => stat.value),
-        backgroundColor: "#608dbc",
+        backgroundColor: COLORS.primary,
         borderRadius: 8,
         borderWidth: 0,
       },
@@ -231,7 +237,7 @@ export default function DashBoardPage() {
       {
         label: "Bookings",
         data: data.booking_source_stats.map((stat) => stat.value),
-        backgroundColor: "#608dbc",
+        backgroundColor: COLORS.primary,
         borderRadius: 8,
         borderWidth: 0,
       },
@@ -289,22 +295,10 @@ export default function DashBoardPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="max-w-[1600px] mx-auto space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <StatCard
-            title="Total Rooms"
-            value={data.total_rooms}
-          />
-          <StatCard
-            title="Staff Members"
-            value={data.total_staff}
-          />
-          <StatCard
-            title="Services"
-            value={data.total_services}
-          />
-          <StatCard
-            title="Bookings"
-            value={data.total_bookings}
-          />
+          <StatCard title="Total Rooms" value={`${data.occupied_rooms}/${data.total_rooms}`} />
+          <StatCard title="Staff Members" value={data.total_staff} />
+          <StatCard title="Services" value={data.total_services} />
+          <StatCard title="Bookings" value={data.total_bookings} />
           <StatCard
             title="Avg Rating"
             value={data.average_review_rating.toFixed(2)}
@@ -317,11 +311,11 @@ export default function DashBoardPage() {
           />
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+        <div className="bg-white border-l-4 border-b-4 border-l-[#b0cbe8] border-b-[#b0cbe8] rounded-2xl shadow-lg p-6 border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <h2 className="text-xl font-bold text-slate-800 mb-2">
             Revenue & Booking Trends
           </h2>
-          <div className="h-80">
+          <div className="h-96">
             <Chart
               type="bar"
               data={revenueLineData}
@@ -365,7 +359,7 @@ export default function DashBoardPage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+          <div className="bg-white border-l-4 border-b-4 border-l-[#b0cbe8] border-b-[#b0cbe8] rounded-2xl shadow-lg p-6 border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <h2 className="text-xl font-bold text-slate-800 mb-2">
               Revenue by Source
             </h2>
@@ -400,7 +394,7 @@ export default function DashBoardPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+          <div className="bg-white border-l-4 border-b-4 border-l-[#b0cbe8] border-b-[#b0cbe8] rounded-2xl shadow-lg p-6 border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <h2 className="text-xl font-bold text-slate-800 mb-2">
               Popular Room Types
             </h2>
@@ -430,7 +424,7 @@ export default function DashBoardPage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+          <div className="bg-white border-l-4 border-b-4 border-l-[#b0cbe8] border-b-[#b0cbe8] rounded-2xl shadow-lg p-6 border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <h2 className="text-xl font-bold text-slate-800 mb-2">
               Booking Sources
             </h2>
@@ -447,7 +441,7 @@ export default function DashBoardPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+          <div className="bg-white border-l-4 border-b-4 border-l-[#b0cbe8] border-b-[#b0cbe8] rounded-2xl shadow-lg p-6 border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <h2 className="text-xl font-bold text-slate-800 mb-2">
               Service Usage Statistics
             </h2>
@@ -467,7 +461,7 @@ export default function DashBoardPage() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+          <div className="bg-white border-l-4 border-b-4 border-l-[#b0cbe8] border-b-[#b0cbe8] rounded-2xl shadow-lg p-6 border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <h2 className="text-xl font-bold text-slate-800 mb-2">
               Service Order Status
             </h2>
@@ -501,7 +495,7 @@ export default function DashBoardPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-slate-200">
+          <div className="bg-white border-l-4 border-b-4 border-l-[#b0cbe8] border-b-[#b0cbe8] rounded-2xl shadow-lg p-6 border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <h2 className="text-xl font-bold text-slate-800 mb-2">
               Request Status
             </h2>
@@ -555,7 +549,7 @@ function StatCard({
   suffix?: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg py-2 px-4 border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div className="bg-white border-l-4 border-b-4 border-l-[#b0cbe8] border-b-[#b0cbe8] rounded-2xl shadow-lg py-2 px-4 border border-slate-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
       <div className="">
         <div className="flex-1">
           <p className="text-xl text-center font-bold text-slate-800 mt-1 border-b border-gray-300">

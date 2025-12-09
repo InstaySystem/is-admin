@@ -150,7 +150,7 @@ export default function ProfilePage() {
         <div className="bg-white shadow-md rounded-lg p-4 md:p-10 w-full max-w-4xl">
           {/* AVATAR + NAME */}
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-6 md:mb-10">
-            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-[#608dbc] flex items-center justify-center text-white text-3xl font-bold">
+            <div className="w-20 h-20 md:w-28 md:h-24 rounded-full bg-[#608dbc] flex items-center justify-center text-white text-3xl font-bold">
               {user?.first_name?.charAt(0) || "U"}
               {user?.last_name?.charAt(0) || ""}
             </div>

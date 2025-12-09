@@ -15,7 +15,6 @@ import { useCallback, useEffect, useState } from "react";
 import { getBookings } from "@/apis/booking";
 import { Booking } from "@/types/booking";
 import CustomAlert from "@/components/ui/CustomAlert";
-import CommonModal from "@/components/modals/CommonModal";
 import { getSources } from "@/apis/source";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
@@ -41,9 +40,6 @@ export default function ManageBooking() {
     type: "success" as "success" | "error" | "info" | "warning",
     message: "",
   });
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
   const showAlert = (type: typeof alert.type, message: string) => {
     setAlert({ open: true, type, message });
@@ -92,22 +88,10 @@ export default function ManageBooking() {
     fetchBookings();
   }, [fetchBookings]);
 
-  const handleOpenDeleteModal = (id: number) => {
-    setIdToDelete(id);
-    setIsDeleteModalOpen(true);
-  };
-
   const handleBookingDetail = (id: number) => {
     router.push(`/manage-booking/${id}`);
   };
 
-  const handleDelete = async () => {
-    if (!idToDelete) return;
-    showAlert("success", `Xóa booking ${idToDelete} thành công`);
-    setIsDeleteModalOpen(false);
-    setIdToDelete(null);
-    fetchBookings();
-  };
 
   const columns = [
     {
@@ -154,13 +138,6 @@ export default function ManageBooking() {
             onClick={() => handleBookingDetail(record.id)}
           >
             Chi tiết
-          </Button>
-          <Button
-            size="small"
-            danger
-            onClick={() => handleOpenDeleteModal(record.id)}
-          >
-            Xóa
           </Button>
         </Space>
       ),
@@ -234,13 +211,6 @@ export default function ManageBooking() {
         open={alert.open}
         type={alert.type}
         message={alert.message}
-      />
-
-      <CommonModal
-        open={isDeleteModalOpen}
-        title="Xác nhận xóa booking"
-        onClose={() => setIsDeleteModalOpen(false)}
-        onOk={handleDelete}
       />
     </div>
   );
