@@ -199,6 +199,7 @@ export default function DashBoardPage() {
           COLORS.secondary,
           COLORS.info,
           COLORS.pink,
+          COLORS.purple,
         ],
         borderWidth: 0,
         hoverOffset: 15,
@@ -211,7 +212,13 @@ export default function DashBoardPage() {
     datasets: [
       {
         data: data.popular_room_type_stats.map((stat) => stat.percentage),
-        backgroundColor: [COLORS.primary, COLORS.secondary, COLORS.info, COLORS.pink],
+        backgroundColor: [
+          COLORS.primary,
+          COLORS.secondary,
+          COLORS.info,
+          COLORS.pink,
+          COLORS.purple,
+        ],
         borderWidth: 0,
         hoverOffset: 15,
       },
@@ -295,7 +302,10 @@ export default function DashBoardPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="max-w-[1600px] mx-auto space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <StatCard title="Total Rooms" value={`${data.occupied_rooms}/${data.total_rooms}`} />
+          <StatCard
+            title="Total Rooms"
+            value={`${data.occupied_rooms}/${data.total_rooms}`}
+          />
           <StatCard title="Staff Members" value={data.total_staff} />
           <StatCard title="Services" value={data.total_services} />
           <StatCard title="Bookings" value={data.total_bookings} />

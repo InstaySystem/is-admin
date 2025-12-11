@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   FaChartLine,
   FaUsers,
+  FaUser,
   FaCog,
   FaRestroom,
   FaRegQuestionCircle,
@@ -61,7 +62,7 @@ const menuItems = [
   },
   {
     name: "Staff",
-    icon: <FaUsers />,
+    icon: <FaUser />,
     path: "/staff",
     rolesAllowed: ["admin"],
   },
@@ -101,7 +102,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   return (
     <motion.div
       animate={{ width: isOpen ? 200 : 52 }}
-      className="h-screen bg-white shadow-md flex flex-col overflow-hidden relative text-black transition-all duration-200"
+      className="h-screen bg-white shadow-md flex flex-col overflow-hidden relative text-black transition-all duration-100"
     >
       <div className="flex h-[57px] items-center px-2 border-b border-gray-200">
         <button
@@ -152,6 +153,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
+                      className="text-nowrap"
                     >
                       {item.name}
                     </motion.span>
@@ -170,7 +172,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-gray-600 text-sm"
+              className="text-gray-600 text-sm text-nowrap"
             >
               &copy; 2025 Instay Application
             </motion.div>
