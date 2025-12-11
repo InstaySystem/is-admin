@@ -35,11 +35,13 @@ const menuItems = [
     name: "Booking",
     icon: <FaBookMedical />,
     path: "/manage-booking",
+    rolesAllowed: ["admin", "staff-reception"],
   },
   {
     name: "Rooms",
     icon: <FaRestroom />,
     path: "/manage-rooms",
+    rolesAllowed: ["admin", "staff-reception"],
   },
   {
     name: "Services",
