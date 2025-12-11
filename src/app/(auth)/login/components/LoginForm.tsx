@@ -39,6 +39,7 @@ export default function LoginForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const { setUser } = useAppStore();
+
   const msg = useMessage();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
@@ -46,10 +47,14 @@ export default function LoginForm() {
   const onSubmit = async (data: IFormInput) => {
     try {
       const res = await login(data);
+
       setUser(res.data.data.user);
       setCookie("role", res.data.data.user.role);
+
       msg.success(res.data.message);
-      router.push("/dashboard");
+
+      if (res.data.data.user.role === "admin") router.push("/dashboard");
+      else router.push("/manage-booking");
     } catch (error: any) {
       msg.error(error);
     }
