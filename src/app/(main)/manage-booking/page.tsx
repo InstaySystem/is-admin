@@ -14,10 +14,10 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { getBookings } from "@/apis/booking";
 import { Booking } from "@/types/booking";
-import CustomAlert from "@/components/ui/CustomAlert";
 import { getSources } from "@/apis/source";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 const { RangePicker } = DatePicker;
 
@@ -35,15 +35,7 @@ export default function ManageBooking() {
   const [limit] = useState(10);
   const [total, setTotal] = useState(0);
 
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
-
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
+  const msg = useMessage();
 
   const router = useRouter();
 
@@ -52,9 +44,9 @@ export default function ManageBooking() {
       const res = await getSources();
       setSources(res.data.data.sources || []);
     } catch (err: any) {
-      showAlert("error", err.message || "Lỗi tải danh sách nguồn booking");
+      msg.error(err);
     }
-  }, []);
+  }, [msg]);
 
   const fetchBookings = useCallback(async () => {
     setLoading(true);
@@ -75,10 +67,10 @@ export default function ManageBooking() {
       setBookings(res.data.data.bookings || []);
       setTotal(res.data.data.meta.total || 0);
     } catch (err: any) {
-      showAlert("error", err.message || "Lỗi tải danh sách booking");
+      msg.error(err);
     }
     setLoading(false);
-  }, [page, limit, search, fromTo, sourceId]);
+  }, [page, limit, search, fromTo, sourceId, msg]);
 
   useEffect(() => {
     fetchSources();
@@ -91,7 +83,6 @@ export default function ManageBooking() {
   const handleBookingDetail = (id: number) => {
     router.push(`/manage-booking/${id}`);
   };
-
 
   const columns = [
     {
@@ -206,12 +197,6 @@ export default function ManageBooking() {
           showSizeChanger={false}
         />
       </div>
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
-      />
     </div>
   );
 }

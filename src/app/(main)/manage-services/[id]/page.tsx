@@ -7,7 +7,6 @@ import { Input, Button, Select, InputNumber, Form } from "antd";
 import { RcFile } from "antd/es/upload";
 import { useParams } from "next/navigation";
 import ImagesUploader from "../components/ImagesUploader";
-import CustomAlert from "@/components/ui/CustomAlert";
 import {
   getServiceTypes,
   getServiceById,
@@ -22,6 +21,7 @@ import { ServiceType } from "@/types/service";
 import { getBase64 } from "@/utils/image";
 import { useRouter } from "next/navigation";
 import CommonModal from "@/components/modals/CommonModal";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 interface FormValues {
   name: string;
@@ -35,11 +35,6 @@ interface FormValues {
 export default function EditServicePage() {
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
   const [fileList, setFileList] = useState<any[]>([]);
   const [originalData, setOriginalData] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,6 +42,8 @@ export default function EditServicePage() {
   const params = useParams();
   const serviceId = Number(params.id);
   const router = useRouter();
+
+  const msg = useMessage();
 
   const {
     control,
@@ -63,9 +60,6 @@ export default function EditServicePage() {
       images: [],
     },
   });
-
-  const showAlert = (type: typeof alert.type, message: string) =>
-    setAlert({ open: true, type, message });
 
   const replaceUrl = (input: string) =>
     input ? input.replace(/\\u0026/g, "&") : input;
@@ -150,11 +144,11 @@ export default function EditServicePage() {
 
   const onSubmit = async (data: FormValues) => {
     if (!data.service_type_id) {
-      showAlert("error", "Vui lòng chọn loại dịch vụ");
+      msg.error("Vui lòng chọn loại dịch vụ");
       return;
     }
     if (!originalData) {
-      showAlert("error", "Không thể tải dữ liệu gốc");
+      msg.error("Không thể tải dữ liệu gốc");
       return;
     }
 
@@ -264,16 +258,16 @@ export default function EditServicePage() {
       if (deleteImages.length > 0) payload.delete_images = deleteImages;
 
       if (Object.keys(payload).length === 0) {
-        showAlert("info", "Không có thay đổi nào để cập nhật");
+        msg.info("Không có thay đổi nào để cập nhật");
         setLoading(false);
         return;
       }
 
       const res = await updateService(serviceId, payload);
-      showAlert("success", res.data.message || "Cập nhật dịch vụ thành công!");
+      msg.success(res.data.message);
     } catch (err: any) {
       console.error(err);
-      showAlert("error", err.message || "Cập nhật dịch vụ thất bại");
+      msg.error(err);
     } finally {
       setLoading(false);
     }
@@ -283,11 +277,11 @@ export default function EditServicePage() {
     try {
       setLoading(true);
       const res = await deleteService(serviceId);
-      showAlert("success", res.data.message || "Xóa dịch vụ thành công!");
+      msg.success(res.data.message);
       router.push("/manage-services");
     } catch (err: any) {
       console.error(err);
-      showAlert("error", err.message || "Xóa dịch vụ thất bại");
+      msg.error(err.message);
     }
   };
 
@@ -396,7 +390,9 @@ export default function EditServicePage() {
               <ImagesUploader
                 fileList={fileList}
                 setFileList={setFileList}
-                setValue={(field: string, value: any[]) => setValue(field as keyof FormValues, value)}
+                setValue={(field: string, value: any[]) =>
+                  setValue(field as keyof FormValues, value)
+                }
                 handlePreview={handlePreview}
               />
             )}
@@ -419,11 +415,6 @@ export default function EditServicePage() {
         </div>
       </Form>
 
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
-      />
       <CommonModal
         open={isModalOpen}
         title="Xác nhận xóa dịch vụ"

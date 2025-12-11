@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getBookingById } from "@/apis/booking";
 import { Booking } from "@/types/booking";
-import { Descriptions, Spin, Divider, Button, message } from "antd";
+import { Descriptions, Spin, Divider, Button } from "antd";
 import { List } from "antd";
 import dayjs from "dayjs";
 import CreateOrderRoomModal from "../../order-rooms/components/CreateOrderRoomModal";
 import { Room } from "@/types/room";
 import { getRooms } from "@/apis/room";
 import { createOrderRoomAdmin } from "@/apis/order_room";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function BookingDetailPage() {
   const params = useParams();
@@ -23,7 +24,7 @@ export default function BookingDetailPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [rooms, setRooms] = useState<Room[]>([]);
 
-  const [messageApi, contextHolder] = message.useMessage();
+  const msg = useMessage();
 
   useEffect(() => {
     if (!bookingId) return;
@@ -34,7 +35,7 @@ export default function BookingDetailPage() {
         const res = await getBookingById(bookingId);
         setBooking(res.data.data.booking);
       } catch (err: any) {
-        messageApi.error(err.message || "Lỗi tải booking");
+        msg.error(err);
       } finally {
         setLoading(false);
       }
@@ -57,7 +58,7 @@ export default function BookingDetailPage() {
 
         setRooms(res.data.data.rooms);
       } catch (err: any) {
-        messageApi.error(err.message || "Lỗi tải danh sách phòng");
+        msg.error(err);
       } finally {
         setLoading(false);
       }
@@ -70,8 +71,6 @@ export default function BookingDetailPage() {
     if (!booking) return;
 
     try {
-      messageApi.open({ type: "loading", content: "Đang tạo đơn phòng..." });
-
       const res = await createOrderRoomAdmin({
         booking_id: booking.id,
         room_id: roomId,
@@ -80,15 +79,13 @@ export default function BookingDetailPage() {
       const orderId = res.data.data.id;
       const qr = res.data.data.secret_code;
 
-      messageApi.destroy();
-      messageApi.success("Tạo đơn phòng thành công!");
+      msg.success(res.data.message);
 
       router.push(
         `/order-rooms/detail/${orderId}?qr=${encodeURIComponent(qr)}`
       );
     } catch (err: any) {
-      messageApi.destroy();
-      messageApi.error(err.message || "Lỗi tạo đơn phòng");
+      msg.error(err);
     } finally {
       setModalOpen(false);
     }
@@ -104,7 +101,6 @@ export default function BookingDetailPage() {
 
   return (
     <div className="p-6 bg-[#f5f5f5] min-h-screen">
-      {contextHolder}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl text-black font-bold">Chi tiết booking</h2>
         <Button

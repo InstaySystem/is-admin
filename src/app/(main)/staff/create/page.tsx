@@ -7,14 +7,15 @@ import { useEffect, useState } from "react";
 import { getDepartments } from "@/apis/department";
 import { getRoles, createUser } from "@/apis/user";
 import { Department, CreateUserRequest } from "@/types/user";
-import CustomAlert from "@/components/ui/CustomAlert";
 import { FaUserCircle, FaKey, FaWallet } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 const { Option } = Select;
 
 export default function CreateUserPage() {
   const router = useRouter();
+  const msg = useMessage();
 
   const {
     handleSubmit,
@@ -36,16 +37,8 @@ export default function CreateUserPage() {
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [roles, setRoles] = useState<Record<string, string>>({});
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
-  const [loading, setLoading] = useState(false);
 
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchDepartments = async () => {
@@ -53,7 +46,7 @@ export default function CreateUserPage() {
         const res = await getDepartments();
         setDepartments(res.data.data.departments);
       } catch (error: any) {
-        showAlert("error", error);
+        msg.error(error);
       }
     };
 
@@ -62,7 +55,7 @@ export default function CreateUserPage() {
         const res = await getRoles();
         setRoles(res.data.data.roles);
       } catch (error: any) {
-        showAlert("error", error);
+        msg.error(error);
       }
     };
 
@@ -74,10 +67,10 @@ export default function CreateUserPage() {
     setLoading(true);
     try {
       const res = await createUser(data);
-      showAlert("success", res.data.message);
+      msg.success(res.data.message);
       router.push("/staff");
     } catch (error: any) {
-      showAlert("error", error);
+      msg.error(error);
     } finally {
       setLoading(false);
     }
@@ -92,7 +85,6 @@ export default function CreateUserPage() {
         </h3>
 
         <div className="grid grid-cols-2 gap-4">
-          {/* Họ */}
           <Form.Item
             label="Họ"
             required
@@ -113,7 +105,6 @@ export default function CreateUserPage() {
             />
           </Form.Item>
 
-          {/* Tên */}
           <Form.Item
             label="Tên"
             required
@@ -134,7 +125,6 @@ export default function CreateUserPage() {
             />
           </Form.Item>
 
-          {/* Email */}
           <Form.Item
             label="Email"
             required
@@ -155,7 +145,6 @@ export default function CreateUserPage() {
             />
           </Form.Item>
 
-          {/* Số điện thoại */}
           <Form.Item
             label="Số điện thoại"
             required
@@ -183,7 +172,6 @@ export default function CreateUserPage() {
         </h3>
 
         <div className="grid grid-cols-2 gap-4">
-          {/* Phòng ban */}
           <Form.Item
             label="Phòng ban"
             required
@@ -211,7 +199,6 @@ export default function CreateUserPage() {
             />
           </Form.Item>
 
-          {/* Trạng thái */}
           <Form.Item label="Trạng thái">
             <Controller
               name="is_active"
@@ -236,7 +223,6 @@ export default function CreateUserPage() {
             />
           </Form.Item>
 
-          {/* Vai trò */}
           <Form.Item
             label="Vai trò"
             required
@@ -271,7 +257,6 @@ export default function CreateUserPage() {
         </h3>
 
         <div className="grid grid-cols-2 gap-4">
-          {/* Username */}
           <Form.Item
             label="Tên đăng nhập"
             required
@@ -292,7 +277,6 @@ export default function CreateUserPage() {
             />
           </Form.Item>
 
-          {/* Password */}
           <Form.Item
             label="Mật khẩu"
             required
@@ -320,12 +304,6 @@ export default function CreateUserPage() {
           </Button>
         </Form.Item>
       </Form>
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
-      />
     </div>
   );
 }

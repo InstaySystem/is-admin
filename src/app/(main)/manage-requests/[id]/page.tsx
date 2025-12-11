@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Card, Button, message, Tag } from "antd";
-
+import { Card, Button, Tag, Spin } from "antd";
 import { getRequestById, updateRequestForAdmin } from "@/apis/request";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function RequestDetailPage() {
   const params = useParams();
@@ -16,14 +16,15 @@ export default function RequestDetailPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
+  const msg = useMessage();
+
   const fetchData = async () => {
     try {
       setLoading(true);
       const res = await getRequestById(id);
       setData(res.data.data.request);
-    } catch (err) {
-      console.error(err);
-      message.error("Không thể tải dữ liệu yêu cầu");
+    } catch (err: any) {
+      msg.error(err);
     } finally {
       setLoading(false);
     }
@@ -33,9 +34,22 @@ export default function RequestDetailPage() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="p-6 text-center">Đang tải...</div>;
-  if (!data)
-    return <div className="p-6 text-center">Không tìm thấy yêu cầu</div>;
+  if (loading) return <Spin fullscreen />;
+  if (!data) {
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold text-red-500">
+          Không tìm thấy yêu cầu
+        </h1>
+        <Button
+          onClick={() => router.back()}
+          className="mt-4 bg-[#608DBC]! text-white"
+        >
+          Quay lại
+        </Button>
+      </div>
+    );
+  }
 
   const {
     code,
@@ -63,15 +77,14 @@ export default function RequestDetailPage() {
     try {
       setUpdating(true);
       await updateRequestForAdmin(id, { status: newStatus });
-      message.success(
+      msg.success(
         newStatus === "accepted"
           ? "Yêu cầu đã được chấp nhận"
           : "Yêu cầu đã hoàn thành"
       );
       fetchData();
-    } catch (err) {
-      console.error(err);
-      message.error("Cập nhật thất bại");
+    } catch (err: any) {
+      msg.error(err);
     } finally {
       setUpdating(false);
     }

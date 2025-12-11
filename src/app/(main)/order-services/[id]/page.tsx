@@ -4,29 +4,49 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Card, Button, Modal, message, Tag } from "antd";
-
 import {
   getOrderServiceById,
   updateOrderServiceForAdmin,
 } from "@/apis/order_service";
 import TextArea from "antd/es/input/TextArea";
+import { generateViewPresignedUrls } from "@/apis/file";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function OrderServiceDetailPage() {
   const params = useParams();
-  const id = Number(params?.id);
-
+  const idService = Number(params?.id);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
   const [modalType, setModalType] = useState<"accepted" | "rejected" | null>(
     null
   );
   const [reason, setReason] = useState("");
 
+  const [imageUrl, setImageUrl] = useState<string>("");
+
+  const msg = useMessage();
+
+  const loadImage = async () => {
+    try {
+      const thumbnailKey = data?.service?.thumbnail?.key;
+      if (!thumbnailKey) return;
+
+      const res = await generateViewPresignedUrls({ keys: [thumbnailKey] });
+
+      const urls = res.data?.data?.presigned_url || [];
+      if (urls.length > 0) {
+        setImageUrl(urls[0].url);
+      }
+    } catch (err) {
+      console.error(err);
+      message.error("Không thể tải ảnh dịch vụ");
+    }
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await getOrderServiceById(id);
+      const res = await getOrderServiceById(idService);
       setData(res.data.data.order_service);
     } catch (err) {
       console.error(err);
@@ -41,12 +61,16 @@ export default function OrderServiceDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (data) loadImage();
+  }, [data]);
+
   if (loading) return <div className="p-6 text-center">Đang tải...</div>;
   if (!data)
     return <div className="p-6 text-center">Không tìm thấy đơn dịch vụ</div>;
 
   const {
-    code,
+    id,
     status,
     guest_note,
     staff_note,
@@ -77,9 +101,9 @@ export default function OrderServiceDetailPage() {
       if (modalType === "rejected") payload.reason = reason || "Không có lý do";
       if (modalType === "accepted") payload.staff_note = reason || null;
 
-      await updateOrderServiceForAdmin(id, payload);
+      await updateOrderServiceForAdmin(idService, payload);
 
-      message.success(
+      msg.success(
         modalType === "accepted"
           ? "Đã chấp nhận đơn dịch vụ"
           : "Đã từ chối đơn dịch vụ"
@@ -89,15 +113,14 @@ export default function OrderServiceDetailPage() {
       setReason("");
 
       fetchData();
-    } catch (err) {
-      console.error(err);
-      message.error("Cập nhật thất bại");
+    } catch (err: any) {
+      msg.error(err);
     }
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-bold text-gray-900">
           Chi tiết đơn dịch vụ
         </h1>
@@ -110,10 +133,10 @@ export default function OrderServiceDetailPage() {
       </div>
 
       <Card className="shadow-lg border border-gray-200 p-6 rounded-lg">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-900">
-          <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-gray-900">
+          <div className="space-y-2 col-span-1">
             <p>
-              <span className="font-semibold">Mã đơn:</span> {code}
+              <span className="font-semibold">Mã đơn:</span> {id}
             </p>
             <p>
               <span className="font-semibold">Trạng thái:</span>{" "}
@@ -138,43 +161,63 @@ export default function OrderServiceDetailPage() {
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 col-span-1">
             <p>
               <span className="font-semibold">Dịch vụ:</span> {service?.name}
             </p>
+
             <p>
               <span className="font-semibold">Số lượng:</span> {quantity}
             </p>
+
             <p>
               <span className="font-semibold">Loại dịch vụ:</span>{" "}
               {service?.service_type?.name || "Không có"}
             </p>
+
             <p>
               <span className="font-semibold">Giá:</span>{" "}
               {service?.price.toLocaleString()}₫
             </p>
+
             <p>
               <span className="font-semibold">Tổng tiền:</span>{" "}
               {total_price.toLocaleString()}₫
             </p>
           </div>
 
-          <div className="col-span-2 pt-4 border-t border-gray-200">
+          <div className="col-span-1">
+            <p className="font-semibold mb-1">Ảnh dịch vụ:</p>
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={service?.name}
+                className="w-30 h-30 object-cover rounded-md border"
+              />
+            ) : (
+              <div className="w-40 h-40 flex items-center justify-center bg-gray-100 border rounded-md">
+                Đang tải ảnh...
+              </div>
+            )}
+          </div>
+
+          <div className="col-span-3 pt-4 border-t border-gray-200">
             <p className="font-semibold mb-1">Phòng:</p>
             <p>
               {order_room?.room?.name} — Tầng{" "}
-              {order_room?.room?.floor?.name || "Không xác định"}
+              {order_room?.room?.floor || "Không xác định"}
             </p>
+            <p>{order_room.room.room_type.name}</p>
           </div>
 
-          <div className="col-span-2">
+          <div className="col-span-3">
             <p className="font-semibold mb-1">Ghi chú khách:</p>
             <div className="p-3 border border-gray-200 rounded-md bg-gray-50">
               {guest_note || "Không có"}
             </div>
           </div>
 
-          <div className="col-span-2">
+          <div className="col-span-3">
             <p className="font-semibold mb-1">Ghi chú nhân viên:</p>
             <div className="p-3 border border-gray-200 rounded-md bg-gray-50">
               {staff_note || "Không có"}

@@ -17,6 +17,7 @@ import CustomAlert from "@/components/ui/CustomAlert";
 import { Button, CircularProgress, Switch } from "@mui/material";
 import CommonModal from "@/components/modals/CommonModal";
 import ChangePasswordModal from "../../components/ChangePasswordModal";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function EditUserPage() {
   const router = useRouter();
@@ -27,14 +28,12 @@ export default function EditUserPage() {
   const [roles, setRoles] = useState<string[]>();
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] =
     useState(false);
+
+  const msg = useMessage();
 
   const fetchUser = async () => {
     try {
@@ -55,7 +54,7 @@ export default function EditUserPage() {
         });
       }
     } catch (error: any) {
-      showAlert("error", error.message || "Không thể tải thông tin người dùng");
+      msg.error(error);
     } finally {
       setLoading(false);
     }
@@ -73,12 +72,12 @@ export default function EditUserPage() {
   const handleDeleteUser = async () => {
     try {
       const res = await deleteUser(userId);
-      showAlert("success", res.data.message);
+      msg.success(res.data.message);
       setTimeout(() => {
         router.push("/staff");
       }, 1500);
     } catch (error: any) {
-      showAlert("error", error.message);
+      msg.error(error);
     }
   };
 
@@ -86,10 +85,10 @@ export default function EditUserPage() {
     const new_password = newPassword;
     try {
       const res = await changeUserPassword(userId, new_password);
-      showAlert("success", res.data.message || "Đổi mật khẩu thành công");
+      msg.success(res.data.message);
       setIsChangePasswordModalOpen(false);
     } catch (error: any) {
-      showAlert("error", error.message || "Đổi mật khẩu thất bại");
+      msg.error(error);
     }
   };
 
@@ -97,10 +96,6 @@ export default function EditUserPage() {
     fetchUser();
     fetchRoles();
   }, []);
-
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -136,24 +131,25 @@ export default function EditUserPage() {
       setLoading(true);
       const res = await updateUser(userId, formData);
       setUser((prev) => (prev ? { ...prev, ...formData } : prev));
-      showAlert("success", res.data.message || "Cập nhật thành công");
+      msg.success(res.data.message);
       fetchUser();
     } catch (error: any) {
-      showAlert("error", error.message || "Cập nhật thất bại");
+      msg.error(error);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDepartmentSuccess = (message: string) => {
+    return msg.success(message);
+  };
+
+  const handleDepartmentError = (message: string) => {
+    return msg.error(message);
+  };
+
   return (
     <div className="flex flex-col">
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
-        onClose={() => setAlert({ ...alert, open: false })}
-      />
-
       <div className="flex justify-center items-center text-black relative">
         {loading && (
           <div className="absolute inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-lg">
@@ -339,8 +335,8 @@ export default function EditUserPage() {
             userId={user?.id}
             department={user?.department}
             onUpdated={handleDepartmentUpdated}
-            onSuccess={(msg) => showAlert("success", msg)}
-            onError={(msg) => showAlert("error", msg)}
+            onSuccess={handleDepartmentSuccess}
+            onError={handleDepartmentError}
           />
 
           <CommonModal

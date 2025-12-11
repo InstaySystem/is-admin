@@ -3,21 +3,16 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Table, Button, Input, Space, message } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
-
-import CustomAlert from "@/components/ui/CustomAlert";
+import { Table, Button, Input, Space } from "antd";
 import CommonModal from "@/components/modals/CommonModal";
-
+import { useMessage } from "@/app/providers/MessageProvider";
 import {
   getRequestTypes,
   deleteRequestType,
   createRequestType,
   updateRequestType,
 } from "@/apis/request_type";
-
 import { getDepartments } from "@/apis/department";
-
 import { RequestType } from "@/types/request";
 import RequestTypeModal from "./components/RequestTypeModal";
 
@@ -30,12 +25,6 @@ export default function ManageRequestTypes() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
@@ -43,18 +32,16 @@ export default function ManageRequestTypes() {
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingItem, setEditingItem] = useState<RequestType | null>(null);
 
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
+  const msg = useMessage();
 
   const fetchDepartments = useCallback(async () => {
     try {
       const res = await getDepartments();
       setDepartments(res.data.data.departments || []);
     } catch (err: any) {
-      message.error(err?.message || "Lỗi tải danh sách phòng ban");
+      msg.error(err?.message || "Lỗi tải danh sách phòng ban");
     }
-  }, []);
+  }, [msg]);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -70,10 +57,10 @@ export default function ManageRequestTypes() {
 
       setItems(list);
     } catch (err: any) {
-      message.error(err?.message || "Lỗi tải danh sách");
+      msg.error(err || "Lỗi tải danh sách");
     }
     setLoading(false);
-  }, [search]);
+  }, [search, msg]);
 
   useEffect(() => {
     fetchItems();
@@ -99,16 +86,16 @@ export default function ManageRequestTypes() {
     try {
       if (modalMode === "create") {
         const res = await createRequestType(data);
-        showAlert("success", res.data.message || "Tạo loại yêu cầu thành công");
+        msg.success(res.data.message);
       } else {
         if (!editingItem) return;
         const res = await updateRequestType(editingItem.id, data);
-        showAlert("success", res.data.message || "Cập nhật thành công");
+        msg.success(res.data.message);
       }
       setIsEditModalOpen(false);
       fetchItems();
     } catch (err: any) {
-      showAlert("error", err?.message || "Lỗi xử lý");
+      msg.error(err);
     }
   };
 
@@ -122,12 +109,12 @@ export default function ManageRequestTypes() {
 
     try {
       const res = await deleteRequestType(deleteId);
-      showAlert("success", res.data.message || "Xóa thành công");
+      msg.success(res.data.message);
       setIsModalOpen(false);
       setDeleteId(null);
       fetchItems();
     } catch (err: any) {
-      showAlert("error", err?.message);
+      msg.error(err);
     }
   };
 
@@ -199,12 +186,6 @@ export default function ManageRequestTypes() {
         dataSource={items}
         loading={loading}
         rowKey="id"
-      />
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
       />
 
       <CommonModal

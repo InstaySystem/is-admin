@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -11,6 +12,7 @@ import { FiLogIn } from "react-icons/fi";
 import { useAppStore } from "@/stores/useAppStore";
 import { setCookie } from "@/utils/cookies";
 import Image from "next/image";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 const schema = yup.object().shape({
   username: yup.string().required("Vui lòng nhập username"),
@@ -37,6 +39,7 @@ export default function LoginForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const { setUser } = useAppStore();
+  const msg = useMessage();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
@@ -45,9 +48,10 @@ export default function LoginForm() {
       const res = await login(data);
       setUser(res.data.data.user);
       setCookie("role", res.data.data.user.role);
+      msg.success(res.data.message);
       router.push("/dashboard");
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      msg.error(error);
     }
   };
 

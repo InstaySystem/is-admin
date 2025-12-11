@@ -8,7 +8,7 @@ interface RoomModalProps {
   open: boolean;
   mode: "create" | "edit";
   initialData?: Room | null;
-  floors: Floor[]; // dùng để auto-suggest tầng
+  floors: Floor[];
   roomTypes: RoomType[];
   onClose: () => void;
   onOk: (data: { name: string; floor: string; room_type_id: number }) => void;
@@ -39,12 +39,10 @@ export default function RoomModal({
   const [suggestions, setSuggestions] = useState<Floor[]>([]); // auto-suggest floors
   const firstInputRef = useRef<HTMLInputElement | null>(null);
 
-  // ============================ INIT ============================
   useEffect(() => {
     if (initialData && mode === "edit") {
       setForm({
         name: initialData.name ?? "",
-        // initialData.floor may be object or string; prefer name if available
         floor:
           typeof initialData.floor === "string"
             ? initialData.floor
@@ -59,12 +57,10 @@ export default function RoomModal({
     setErrors({});
   }, [initialData, mode, open]);
 
-  // focus input
   useEffect(() => {
     if (open) setTimeout(() => firstInputRef.current?.focus(), 120);
   }, [open]);
 
-  // ESC để đóng modal
   useEffect(() => {
     const keyHandler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -73,7 +69,6 @@ export default function RoomModal({
     return () => window.removeEventListener("keydown", keyHandler);
   }, [open, onClose]);
 
-  // ============================ VALIDATE ============================
   const validate = () => {
     const e: typeof errors = {};
     if (!form.name.trim()) e.name = "Tên phòng là bắt buộc";
@@ -86,14 +81,12 @@ export default function RoomModal({
     return Object.keys(e).length === 0;
   };
 
-  // ============================ SAVE ============================
   const handleSave = async () => {
     if (submitting) return;
     if (!validate()) return;
 
     try {
       setSubmitting(true);
-      // onOk is expected to handle create-or-select-floor logic on server side
       await Promise.resolve();
 
       onOk({
@@ -106,7 +99,6 @@ export default function RoomModal({
     }
   };
 
-  // ============================ AUTO-SUGGEST FLOOR ============================
   const handleFloorInput = (value: string) => {
     setForm((s) => ({ ...s, floor: value }));
 
@@ -157,7 +149,6 @@ export default function RoomModal({
 
               <div className="p-6 text-black">
                 <div className="bg-gray-50 p-4 rounded-md shadow-sm space-y-4">
-                  {/* Name */}
                   <div>
                     <label className="block text-sm font-medium mb-1 text-black">
                       Tên phòng
@@ -179,7 +170,6 @@ export default function RoomModal({
                     )}
                   </div>
 
-                  {/* Floor (with auto-suggest) */}
                   <div className="relative">
                     <label className="block text-sm font-medium mb-1 text-black">
                       Tầng
@@ -199,7 +189,6 @@ export default function RoomModal({
                       </p>
                     )}
 
-                    {/* Suggestion Dropdown */}
                     {suggestions.length > 0 && (
                       <div className="absolute left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-20 max-h-40 overflow-auto">
                         {suggestions.map((f) => (
@@ -215,7 +204,6 @@ export default function RoomModal({
                     )}
                   </div>
 
-                  {/* Room Type */}
                   <div>
                     <label className="block text-sm font-medium mb-1 text-black">
                       Loại phòng

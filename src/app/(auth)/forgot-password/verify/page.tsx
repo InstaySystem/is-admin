@@ -50,13 +50,13 @@ export default function VerifyPage() {
   return (
     <div className="w-full max-w-md mx-auto text-black">
       <div className="w-16 h-16 bg-gray-100 rounded-2xl mx-auto mb-6 shadow">
-                <Image
-                  src="/images/logo.jpg"
-                  width={64}
-                  height={64}
-                  alt="Logo"
-                  className="object-cover rounded-2xl"
-                />
+        <Image
+          src="/images/logo.jpg"
+          width={64}
+          height={64}
+          alt="Logo"
+          className="object-cover rounded-2xl"
+        />
       </div>
       <h1 className="text-center text-3xl font-bold">Xác minh OTP</h1>
       <p className="text-center text-gray-500 mt-1 mb-8">

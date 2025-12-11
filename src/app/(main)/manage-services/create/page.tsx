@@ -16,10 +16,10 @@ import {
 import { InboxOutlined } from "@ant-design/icons";
 import { RcFile } from "antd/es/upload";
 import { getServiceTypes, createService } from "@/apis/services";
-import CustomAlert from "@/components/ui/CustomAlert";
 import { ServiceType } from "@/types/service";
 import { generateUploadPresignedUrls } from "@/apis/file";
 import { getBase64 } from "@/utils/image";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 const { Dragger } = Upload;
 
@@ -36,14 +36,12 @@ interface FormValues {
 export default function CreateServicePage() {
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
+
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState<string>("");
   const [previewTitle, setPreviewTitle] = useState<string>("");
+
+  const msg = useMessage();
 
   const handlePreview = async (file: any) => {
     if (!file.url && !file.preview && file.originFileObj) {
@@ -57,10 +55,6 @@ export default function CreateServicePage() {
   };
 
   const handleCancel = () => setPreviewOpen(false);
-
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
 
   const {
     control,
@@ -103,12 +97,12 @@ export default function CreateServicePage() {
 
   const onSubmit = async (data: FormValues) => {
     if (!data.service_type_id) {
-      showAlert("error", "Vui lòng chọn loại dịch vụ");
+      msg.error("Vui lòng chọn loại dịch vụ");
       return;
     }
 
     if (!data.images || data.images.length === 0) {
-      showAlert("error", "Vui lòng thêm ít nhất một hình ảnh cho dịch vụ");
+      msg.error("Vui lòng thêm ít nhất một hình ảnh cho dịch vụ");
       return;
     }
 
@@ -153,12 +147,10 @@ export default function CreateServicePage() {
       });
 
       const [_, res] = await Promise.all([...uploadPromises, createPromise]);
-
-      showAlert("success", res.message || "Tạo dịch vụ thành công!");
-
+      msg.success(res.data.message);
       window.location.href = `/manage-services`;
     } catch (err: any) {
-      showAlert("error", err.message || "Tạo dịch vụ thất bại");
+      msg.error(err);
     } finally {
       setLoading(false);
     }
@@ -372,12 +364,6 @@ export default function CreateServicePage() {
           </Button>
         </div>
       </Form>
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
-      />
     </div>
   );
 }

@@ -84,7 +84,6 @@ export default function DepartmentPopUp({
         sx: { borderRadius: 3, overflow: "hidden", boxShadow: 6 },
       }}
     >
-      {/* Header */}
       <DialogTitle
         sx={{
           bgcolor: "#608DBC",
@@ -100,7 +99,6 @@ export default function DepartmentPopUp({
         {mode === "view" && "Thông tin phòng ban"}
       </DialogTitle>
 
-      {/* Content */}
       <DialogContent sx={{ p: 3 }}>
         <Box
           sx={{
@@ -147,7 +145,6 @@ export default function DepartmentPopUp({
 
       <Divider />
 
-      {/* Actions */}
       <DialogActions
         sx={{
           justifyContent: "space-between",

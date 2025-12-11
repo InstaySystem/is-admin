@@ -8,6 +8,7 @@ import { getRequestsForAdmin } from "@/apis/request";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/stores/useAppStore";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 const { RangePicker } = DatePicker;
 
@@ -23,6 +24,8 @@ export default function ManageRequestPage() {
   const [limit] = useState(10);
   const [total, setTotal] = useState(0);
   const router = useRouter();
+
+  const msg = useMessage();
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -41,11 +44,11 @@ export default function ManageRequestPage() {
 
       setRequests(res.data.data.requests || []);
       setTotal(res.data.data.meta.total || 0);
-    } catch (error) {
-      console.error("Error fetching requests:", error);
+    } catch (error: any) {
+      msg.error(error);
     }
     setLoading(false);
-  }, [page, limit, status, fromTo]);
+  }, [msg, page, limit, status, fromTo]);
 
   useEffect(() => {
     fetchRequests();

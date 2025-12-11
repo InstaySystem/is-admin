@@ -4,7 +4,8 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { verifyOrderRoomAdmin } from "@/apis/order_room";
-import { message, Spin } from "antd";
+import { Spin } from "antd";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function VerifyOrderRoomPage() {
   const router = useRouter();
@@ -13,20 +14,19 @@ export default function VerifyOrderRoomPage() {
   const code = params?.code?.toString();
   const [loading, setLoading] = useState(true);
 
+  const msg = useMessage();
+
   useEffect(() => {
     if (!code) return;
 
     const verify = async () => {
       try {
         const res = await verifyOrderRoomAdmin(code);
-        console.log(res);
-        message.success("Xác nhận đơn phòng thành công!");
+        msg.success(res.data.message);
         router.replace("/guest");
       } catch (err: any) {
-        message.error(
-          err?.response?.data?.message || "Xác nhận đơn phòng thất bại!"
-        );
-        router.replace("/welcome");
+        msg.error(err || "Xác nhận đơn phòng thất bại!");
+        router.replace("/guest");
       } finally {
         setLoading(false);
       }

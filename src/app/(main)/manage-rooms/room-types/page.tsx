@@ -2,9 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Table, Space, Button, Input, message } from "antd";
+import { Table, Space, Button, Input } from "antd";
 import { useCallback, useEffect, useState } from "react";
-import CustomAlert from "@/components/ui/CustomAlert";
 import {
   getRoomTypes,
   deleteRoomType,
@@ -14,23 +13,20 @@ import {
 import { RoomType } from "@/types/room";
 import CommonModal from "@/components/modals/CommonModal";
 import RoomTypeModal from "./components/RoomTypeModal";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function ManageRoomTypes() {
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
 
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingItem, setEditingItem] = useState<RoomType | null>(null);
+
+  const msg = useMessage();
 
   const fetchRoomTypes = useCallback(async () => {
     setLoading(true);
@@ -46,18 +42,14 @@ export default function ManageRoomTypes() {
 
       setRoomTypes(items);
     } catch (err: any) {
-      message.error(err.message || "Lỗi tải danh sách loại phòng");
+      msg.error(err || "Lỗi tải danh sách loại phòng");
     }
     setLoading(false);
-  }, [search]);
+  }, [search, msg]);
 
   useEffect(() => {
     fetchRoomTypes();
   }, [fetchRoomTypes]);
-
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
 
   const openCreateModal = () => {
     setModalMode("create");
@@ -78,17 +70,17 @@ export default function ManageRoomTypes() {
     try {
       if (modalMode === "create") {
         const res = await createRoomType(data);
-        showAlert("success", res.data.message || "Đã tạo loại phòng");
+        msg.success(res.data.message);
       } else {
         if (!editingItem) return;
         const res = await updateRoomType(editingItem.id, data);
-        showAlert("success", res.data.message || "Đã cập nhật loại phòng");
+        msg.success(res.data.message);
       }
 
       setIsEditModalOpen(false);
       fetchRoomTypes();
     } catch (error: any) {
-      showAlert("error", error.message || "Lỗi xử lý");
+      msg.error(error);
     }
   };
 
@@ -102,12 +94,12 @@ export default function ManageRoomTypes() {
 
     try {
       const res = await deleteRoomType(idToDelete);
-      showAlert("success", res.data.message || "Xóa loại phòng thành công");
+      msg.success(res.data.message);
       setIsModalOpen(false);
       setIdToDelete(null);
       fetchRoomTypes();
     } catch (error: any) {
-      showAlert("error", error.message);
+      msg.error(error);
     }
   };
 
@@ -182,12 +174,6 @@ export default function ManageRoomTypes() {
         dataSource={roomTypes}
         loading={loading}
         rowKey="id"
-      />
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
       />
 
       <CommonModal

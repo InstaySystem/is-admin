@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -5,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { resetPassword } from "@/apis/auth";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function NewPasswordPage() {
   const router = useRouter();
@@ -19,6 +21,8 @@ export default function NewPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const msg = useMessage();
 
   const handleSubmit = async () => {
     if (!password.trim() || !confirm.trim()) {
@@ -47,14 +51,16 @@ export default function NewPasswordPage() {
 
       if (res.data?.message) {
         setSuccess(true);
+        msg.success(res.data.message);
         setTimeout(() => router.push("/login"), 1500);
       } else {
         setError(
           "Không thể đặt lại mật khẩu. Token không hợp lệ hoặc đã hết hạn."
         );
       }
-    } catch {
-      setError("Có lỗi xảy ra khi đặt lại mật khẩu.");
+    } catch (error: any) {
+      setError(error);
+      msg.error(error);
     } finally {
       setLoading(false);
     }

@@ -8,11 +8,11 @@ import { getFloors } from "@/apis/floor";
 import { getRooms, deleteRoom, createRoom, updateRoom } from "@/apis/room";
 import { getRoomTypesFilter } from "@/apis/room_type";
 import { Room, Floor, RoomType } from "@/types/room";
-import CustomAlert from "@/components/ui/CustomAlert";
 import CommonModal from "@/components/modals/CommonModal";
 import { SearchOutlined } from "@ant-design/icons";
 import RoomModal from "./components/RoomModal";
 import { useAppStore } from "@/stores/useAppStore";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function ManageRoom() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -25,12 +25,6 @@ export default function ManageRoom() {
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [floors, setFloors] = useState<Floor[]>([]);
   const [inUse, setInUse] = useState<boolean | undefined>();
-
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
 
   const isAdmin = useAppStore((s) => s._role) === "admin";
 
@@ -47,27 +41,25 @@ export default function ManageRoom() {
   const [limit] = useState(10);
   const [total, setTotal] = useState(0);
 
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
+  const msg = useMessage();
 
   const fetchFloors = useCallback(async () => {
     try {
       const res = await getFloors();
       setFloors(res.data.data.floors || []);
     } catch (err: any) {
-      showAlert("error", err.message || "Lỗi tải danh sách tầng");
+      msg.error(err);
     }
-  }, []);
+  }, [msg]);
 
   const fetchRoomTypes = useCallback(async () => {
     try {
       const res = await getRoomTypesFilter();
       setRoomTypes(res.data.data.room_types || []);
     } catch (err: any) {
-      showAlert("error", err.message || "Lỗi tải danh sách loại phòng");
+      msg.error(err);
     }
-  }, []);
+  }, [msg]);
 
   const fetchRooms = useCallback(async () => {
     setLoading(true);
@@ -86,10 +78,10 @@ export default function ManageRoom() {
       setRooms(response.data.data.rooms || []);
       setTotal(response.data.data.meta.total || 0);
     } catch (err: any) {
-      showAlert("error", err.message || "Lỗi tải danh sách phòng");
+      msg.error(err);
     }
     setLoading(false);
-  }, [page, limit, search, roomTypeId, floorId, inUse]);
+  }, [msg, page, limit, search, roomTypeId, floorId, inUse]);
 
   useEffect(() => {
     fetchFloors();
@@ -122,12 +114,12 @@ export default function ManageRoom() {
 
     try {
       const res = await deleteRoom(idToDelete);
-      showAlert("success", res.data.message || "Xóa phòng thành công");
+      msg.success(res.data.message);
       setIsDeleteModalOpen(false);
       setIdToDelete(null);
       fetchRooms();
     } catch (error: any) {
-      showAlert("error", error.message || "Lỗi xóa phòng");
+      msg.error(error);
     }
   };
 
@@ -135,16 +127,16 @@ export default function ManageRoom() {
     try {
       if (roomModalMode === "create") {
         const res = await createRoom(data);
-        showAlert("success", res.data.message || "Tạo phòng thành công");
+        msg.success(res.data.message);
       } else {
         const res = await updateRoom(roomModalInitial!.id, data);
-        showAlert("success", res.data.message || "Cập nhật phòng thành công");
+        msg.success(res.data.message);
       }
 
       setRoomModalOpen(false);
       fetchRooms();
     } catch (error: any) {
-      showAlert("error", error.message || "Có lỗi xảy ra");
+      msg.error(error);
     }
   };
 
@@ -325,12 +317,6 @@ export default function ManageRoom() {
         }}
         rowKey="id"
         className="text-lg"
-      />
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
       />
 
       <CommonModal

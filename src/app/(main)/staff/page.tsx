@@ -6,12 +6,12 @@ import { Table, Tag, Space, Button, Input, Select, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { getUsers, getRoles, deleteUser } from "@/apis/user";
 import { getDepartments } from "@/apis/department";
-import CustomAlert from "@/components/ui/CustomAlert";
 import { Department, User } from "@/types/user";
 import { SearchOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { getInitialAvatar } from "@/utils/getInitialAvatar";
 import CommonModal from "@/components/modals/CommonModal";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function ManageStaff() {
   const [users, setUsers] = useState<User[]>([]);
@@ -26,21 +26,16 @@ export default function ManageStaff() {
   );
   const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
+
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
+
+  const msg = useMessage();
 
   const router = useRouter();
-
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -57,11 +52,12 @@ export default function ManageStaff() {
       });
 
       setUsers(response.data.data.users || []);
+      setTotal(response.data.data.meta.total || 0);
     } catch (err: any) {
-      message.error(err.message || "Lỗi tải danh sách nhân viên");
+      msg.error(err.message || "Lỗi tải danh sách nhân viên");
     }
     setLoading(false);
-  }, [page, limit, search, role, departmentId, isActive]);
+  }, [msg, page, limit, search, role, departmentId, isActive]);
 
   const fetchDepartments = useCallback(async () => {
     try {
@@ -104,12 +100,12 @@ export default function ManageStaff() {
 
     try {
       const res = await deleteUser(idToDelete);
-      showAlert("success", res.data.message || "Xóa nhân viên thành công");
+      msg.success(res.data.message);
       setIsModalOpen(false);
       setIdToDelete(null);
       fetchUsers();
     } catch (error: any) {
-      showAlert("error", error);
+      msg.error(error);
     }
   };
 
@@ -269,15 +265,18 @@ export default function ManageStaff() {
         columns={columns}
         dataSource={users}
         loading={loading}
-        pagination={false}
         rowKey="id"
         className="text-lg"
-      />
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
+        pagination={{
+          current: page,
+          pageSize: limit,
+          total: total,
+          showSizeChanger: true,
+          onChange: (newPage, newLimit) => {
+            setPage(newPage);
+            setLimit(newLimit);
+          },
+        }}
       />
 
       <CommonModal

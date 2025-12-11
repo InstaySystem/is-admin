@@ -14,9 +14,8 @@ import { getMe, updateInfo, changePassword } from "@/apis/auth";
 import DepartmentModal from "./components/DepartmentModal";
 import ChangePasswordModal from "./components/ChangePasswordForm";
 import { Department, UpdateInforRequest, User } from "@/types/user";
-import CustomAlert from "@/components/ui/CustomAlert";
 import { Button, CircularProgress } from "@mui/material";
-import { message } from "antd";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User>();
@@ -31,13 +30,7 @@ export default function ProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isChangePassOpen, setIsChangePassOpen] = useState(false);
   const [changePassLoading, setChangePassLoading] = useState(false);
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
-
-  const [messageApi, contextHolder] = message.useMessage();
+  const msg = useMessage();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -52,20 +45,16 @@ export default function ProfilePage() {
             email: userData.email || "",
             phone: userData.phone || "",
           });
-          showAlert("success", res.data.message);
+          msg.success(res.data.message);
         }
       } catch (error: any) {
-        showAlert("error", error);
+        msg.error(error);
       } finally {
         setLoading(false);
       }
     };
     fetchUser();
   }, []);
-
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -84,9 +73,9 @@ export default function ProfilePage() {
             }
           : prev
       );
-      showAlert("success", res.data.message);
+      msg.success(res.data.message);
     } catch (error: any) {
-      showAlert("error", error);
+      msg.error(error);
     } finally {
       setLoading(false);
     }
@@ -98,7 +87,7 @@ export default function ProfilePage() {
     confirm_password: string;
   }) => {
     if (values.new_password !== values.confirm_password) {
-      messageApi.error("Mật khẩu xác nhận không khớp");
+      msg.error("Mật khẩu xác nhận không khớp");
       return;
     }
 
@@ -109,10 +98,10 @@ export default function ProfilePage() {
         new_password: values.new_password,
       });
 
-      messageApi.success(res.data.message || "Đổi mật khẩu thành công");
+      msg.success(res.data.message);
       setIsChangePassOpen(false);
     } catch (err: any) {
-      messageApi.error(err || "Đổi mật khẩu thất bại");
+      msg.error(err);
     } finally {
       setChangePassLoading(false);
     }
@@ -131,15 +120,6 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col px-3 md:px-0">
-      {contextHolder}
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
-        onClose={() => setAlert({ ...alert, open: false })}
-      />
-
       <div className="flex justify-center items-start md:items-center text-black relative">
         {loading && (
           <div className="absolute inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center rounded-lg">
@@ -148,7 +128,6 @@ export default function ProfilePage() {
         )}
 
         <div className="bg-white shadow-md rounded-lg p-4 md:p-10 w-full max-w-4xl">
-          {/* AVATAR + NAME */}
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-6 md:mb-10">
             <div className="w-20 h-20 md:w-28 md:h-24 rounded-full bg-[#608dbc] flex items-center justify-center text-white text-3xl font-bold">
               {user?.first_name?.charAt(0) || "U"}
@@ -181,9 +160,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* GRID CONTENT */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* LEFT */}
             <div className="bg-[#B0CBE8] rounded-lg p-6 space-y-4">
               <div>
                 <p className="text-gray-700 font-medium flex items-center gap-2">
@@ -230,7 +207,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* RIGHT */}
             <div className="bg-[#B0CBE8] rounded-lg p-6 space-y-3">
               <h2 className="text-lg font-semibold text-gray-800 mb-2">
                 Thông tin chi tiết

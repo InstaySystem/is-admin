@@ -2,46 +2,35 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Table, Tag, Space, Button, Input, Select, message } from "antd";
+import { Table, Tag, Space, Button, Input, Select } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { getServices, deleteService } from "@/apis/services";
 import { getServiceTypes } from "@/apis/services";
-import CustomAlert from "@/components/ui/CustomAlert";
 import { Service, ServiceType } from "@/types/service";
 import { SearchOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import CommonModal from "@/components/modals/CommonModal";
-import { useAppStore } from "@/stores/useAppStore";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function ManageService() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [search, setSearch] = useState("");
   const [serviceTypeId, setServiceTypeId] = useState<number | undefined>(
     undefined
   );
   const [isActive, setIsActive] = useState<boolean | undefined>(undefined);
-
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>();
-
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const router = useRouter();
-
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
+  const msg = useMessage();
 
   const [debouncedSearch, setDebouncedSearch] = useState(search);
 
@@ -67,20 +56,21 @@ export default function ManageService() {
       });
 
       setServices(response.data.data.services || []);
+      setTotal(response.data.data.meta.total || 0);
     } catch (err: any) {
-      message.error(err.message || "Lỗi tải danh sách dịch vụ");
+      msg.error(err);
     }
     setLoading(false);
-  }, [page, limit, debouncedSearch, serviceTypeId, isActive]);
+  }, [msg, page, limit, debouncedSearch, serviceTypeId, isActive]);
 
   const fetchServiceTypes = useCallback(async () => {
     try {
       const res = await getServiceTypes();
       setServiceTypes(res.data.data.service_types || []);
     } catch (err: any) {
-      message.error("Lỗi tải loại dịch vụ");
+      msg.error(err);
     }
-  }, []);
+  }, [msg]);
 
   useEffect(() => {
     fetchServiceTypes();
@@ -104,12 +94,12 @@ export default function ManageService() {
 
     try {
       const res = await deleteService(idToDelete);
-      showAlert("success", res.data.message || "Xóa dịch vụ thành công");
+      msg.success(res.data.message);
       setIsModalOpen(false);
       setIdToDelete(null);
       fetchServices();
     } catch (error: any) {
-      showAlert("error", error);
+      msg.error(error);
     }
   };
 
@@ -233,20 +223,23 @@ export default function ManageService() {
           Loại dịch vụ
         </Button>
       </div>
-
       <Table
         columns={columns}
         dataSource={services}
         loading={loading}
-        pagination={false}
         rowKey="id"
         className="text-lg"
-      />
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
+        pagination={{
+          current: page,
+          pageSize: limit,
+          total,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "20", "50"],
+          onChange: (newPage, newLimit) => {
+            setPage(newPage);
+            setLimit(newLimit);
+          },
+        }}
       />
 
       <CommonModal

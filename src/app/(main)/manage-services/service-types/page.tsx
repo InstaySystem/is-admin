@@ -2,9 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Table, Tag, Space, Button, Input, Select, message } from "antd";
+import { Table, Tag, Space, Button, Input, Select } from "antd";
 import { useCallback, useEffect, useState } from "react";
-import CustomAlert from "@/components/ui/CustomAlert";
 import {
   getServiceTypes,
   deleteServiceType,
@@ -18,21 +17,16 @@ import CommonModal from "@/components/modals/CommonModal";
 import { getDepartments } from "@/apis/department";
 import { Department } from "@/types/user";
 import ServiceTypeModal from "./components/ServiceTypeModal";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function ManageServiceTypes() {
+  const router = useRouter();
+
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [loading, setLoading] = useState(false);
-
   const [search, setSearch] = useState("");
   const [departmentId, setDepartmentId] = useState<number | undefined>();
   const [departments, setDepartments] = useState<Department[]>();
-  const router = useRouter();
-
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
@@ -40,25 +34,22 @@ export default function ManageServiceTypes() {
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingItem, setEditingItem] = useState<ServiceType | null>(null);
 
+  const msg = useMessage();
+
   const openCreateModal = () => {
     setModalMode("create");
     setEditingItem(null);
     setIsEditModalOpen(true);
   };
 
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
-
   const fetchDepartments = useCallback(async () => {
     try {
       const res = await getDepartments();
-
       setDepartments(res.data.data.departments || []);
     } catch (err: any) {
-      message.error(err.message || "Lỗi tải danh sách phòng ban");
+      msg.error(err);
     }
-  }, []);
+  }, [msg]);
 
   const fetchServiceTypes = useCallback(async () => {
     setLoading(true);
@@ -78,10 +69,10 @@ export default function ManageServiceTypes() {
 
       setServiceTypes(items);
     } catch (err: any) {
-      message.error(err.message || "Lỗi tải danh sách loại dịch vụ");
+      msg.error(err);
     }
     setLoading(false);
-  }, [search, departmentId]);
+  }, [msg, search, departmentId]);
 
   useEffect(() => {
     fetchDepartments();
@@ -104,17 +95,17 @@ export default function ManageServiceTypes() {
     try {
       if (modalMode === "create") {
         const res = await createServiceType(data);
-        showAlert("success", res.data.message || "Đã tạo loại dịch vụ");
+        msg.success(res.data.message);
       } else {
         if (!editingItem) return;
         const res = await updateServiceType(editingItem.id, data);
-        showAlert("success", res.data.message || "Đã cập nhật loại dịch vụ");
+        msg.success(res.data.message);
       }
 
       setIsEditModalOpen(false);
       fetchServiceTypes();
     } catch (error: any) {
-      showAlert("error", error.message || "Lỗi xử lý");
+      msg.error(error);
     }
   };
 
@@ -128,12 +119,12 @@ export default function ManageServiceTypes() {
 
     try {
       const res = await deleteServiceType(idToDelete);
-      showAlert("success", res.data.message || "Xóa loại dịch vụ thành công");
+      msg.success(res.data.message);
       setIsModalOpen(false);
       setIdToDelete(null);
       fetchServiceTypes();
     } catch (error: any) {
-      showAlert("error", error);
+      msg.error(error);
     }
   };
 
@@ -249,12 +240,6 @@ export default function ManageServiceTypes() {
         loading={loading}
         rowKey="id"
         className="text-lg"
-      />
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
       />
 
       <CommonModal

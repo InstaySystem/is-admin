@@ -14,10 +14,10 @@ import {
 } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { Review } from "@/types/reviews";
-import CustomAlert from "@/components/ui/CustomAlert";
 import dayjs from "dayjs";
 import { getAllReviewsAdmin } from "@/apis/reviews";
 import { SearchOutlined } from "@ant-design/icons";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 const { RangePicker } = DatePicker;
 
@@ -35,15 +35,7 @@ export default function ManageReviews() {
   const [sortBy, setSortBy] = useState<"created_at">("created_at");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
 
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
-
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
+  const msg = useMessage();
 
   const fetchReviews = useCallback(async () => {
     setLoading(true);
@@ -55,7 +47,6 @@ export default function ManageReviews() {
         order,
       };
 
-      // Thêm filter nếu có
       if (search || starFilter) {
         const filters = [];
         if (search) filters.push(`email:${search}`);
@@ -63,7 +54,6 @@ export default function ManageReviews() {
         query.filter = filters.join(",");
       }
 
-      // Thêm date range nếu có
       if (fromTo?.[0]) query.from = fromTo[0];
       if (fromTo?.[1]) query.to = fromTo[1];
 
@@ -71,10 +61,10 @@ export default function ManageReviews() {
       setReviews(res.data.data.reviews || []);
       setTotal(res.data.data.meta.total || 0);
     } catch (err: any) {
-      showAlert("error", err.message || "Lỗi tải danh sách review");
+      msg.error(err || "Lỗi tải danh sách review");
     }
     setLoading(false);
-  }, [page, limit, search, fromTo, starFilter, sortBy, order]);
+  }, [msg, page, limit, search, fromTo, starFilter, sortBy, order]);
 
   useEffect(() => {
     fetchReviews();
@@ -213,12 +203,6 @@ export default function ManageReviews() {
           showSizeChanger={false}
         />
       </div>
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
-      />
     </div>
   );
 }

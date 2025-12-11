@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import Sidebar from "@/components/ui/Sidebar";
 import Header from "@/components/layout/Header";
 import { Geist, Geist_Mono, Montserrat } from "next/font/google";
-import { message } from "antd";
 import { useNotificationStore } from "@/stores/useNotificationStore";
 import { useAppStore } from "@/stores/useAppStore";
+import { useMessage } from "../providers/MessageProvider";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({
@@ -26,29 +26,29 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [messageApi, contextHolder] = message.useMessage();
 
   const addNotification = useNotificationStore((s) => s.addNotification);
   const role = useAppStore((s) => s._role);
+  const msg = useMessage();
 
   useEffect(() => {
     if (role === "admin") {
-      console.log("Admin role, skipping SSE");
       return;
     }
+
     const sse = new EventSource(`${process.env.NEXT_PUBLIC_API_URL}/sse`, {
       withCredentials: true,
     });
 
     sse.addEventListener("order_service", (event) => {
       const data = JSON.parse(event.data);
-      messageApi.info(`Đơn mới: ${data.content}`, 10);
+      msg.info(`Đơn mới: ${data.content}`);
       addNotification(data);
     });
 
     sse.addEventListener("request", (event) => {
       const data = JSON.parse(event.data);
-      messageApi.info(`Yêu cầu mới: ${data.content}`, 10);
+      msg.info(`Yêu cầu mới: ${data.content}`);
       addNotification(data);
     });
 
@@ -58,13 +58,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
 
     return () => sse.close();
-  }, [messageApi, addNotification]);
+  }, [msg, addNotification]);
 
   return (
     <div
       className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased flex h-screen`}
     >
-      {contextHolder}
       <Sidebar
         isOpen={isSidebarOpen}
         toggle={() => setIsSidebarOpen(!isSidebarOpen)}

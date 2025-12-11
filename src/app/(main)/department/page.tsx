@@ -9,7 +9,6 @@ import {
 } from "@/apis/department";
 import { Department } from "@/types/user";
 import {
-  FaSearch,
   FaEdit,
   FaUserShield,
   FaTools,
@@ -17,9 +16,8 @@ import {
   FaUtensils,
   FaShieldAlt,
 } from "react-icons/fa";
-import { Input } from "antd";
 import DepartmentPopUp from "./components/DepartmentPopUp";
-import CustomAlert from "@/components/ui/CustomAlert";
+import { useMessage } from "@/app/providers/MessageProvider";
 
 export default function DepartmentPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -31,15 +29,7 @@ export default function DepartmentPage() {
   const [selectedDepartment, setSelectedDepartment] =
     useState<Department | null>(null);
 
-  const [alert, setAlert] = useState({
-    open: false,
-    type: "success" as "success" | "error" | "info" | "warning",
-    message: "",
-  });
-
-  const showAlert = (type: typeof alert.type, message: string) => {
-    setAlert({ open: true, type, message });
-  };
+  const msg = useMessage();
 
   const fetchDepartments = async () => {
     try {
@@ -81,15 +71,15 @@ export default function DepartmentPage() {
     try {
       if (popupMode === "create") {
         const res = await createDepartment(data);
-        showAlert("success", res.data.message);
+        msg.success(res.data.message);
       } else if (popupMode === "edit" && selectedDepartment) {
         const res = await updateDepartment(selectedDepartment.id, data);
-        showAlert("success", res.data.message);
+        msg.success(res.data.message);
       }
       await fetchDepartments();
       setPopupOpen(false);
     } catch (err: any) {
-      showAlert("error", err);
+      msg.error(err);
     }
   };
 
@@ -160,13 +150,6 @@ export default function DepartmentPage() {
         initialData={selectedDepartment}
         onClose={() => setPopupOpen(false)}
         onOk={handlePopupOk}
-      />
-
-      <CustomAlert
-        open={alert.open}
-        type={alert.type}
-        message={alert.message}
-        onClose={() => setAlert({ ...alert, open: false })}
       />
     </div>
   );
