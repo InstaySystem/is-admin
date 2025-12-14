@@ -152,7 +152,7 @@ export default function GuestServicesPage() {
                   </div>
                   <div className="text-sm text-gray-500">
                     Số lượng: {service.quantity} | Tổng:
-                    {service.total_price.toFixed(2)} VNĐ
+                    {service.total_price.toFixed(2)}₫
                   </div>
                 </div>
                 <div

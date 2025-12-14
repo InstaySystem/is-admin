@@ -133,7 +133,7 @@ export default function DetailGuestServicePage() {
               Giá dịch vụ
             </label>
             <p className="text-lg text-gray-900 font-medium">
-              {originalData.price?.toLocaleString("vi-VN")} VNĐ
+              {originalData.price?.toLocaleString("vi-VN")}₫
             </p>
           </div>
 

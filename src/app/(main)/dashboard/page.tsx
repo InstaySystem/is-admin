@@ -256,7 +256,7 @@ export default function DashBoardPage() {
     datasets: [
       {
         data: data.order_service_stats.map((stat) => stat.count),
-        backgroundColor: [COLORS.success, COLORS.danger, COLORS.warning],
+        backgroundColor: [COLORS.danger, COLORS.warning, COLORS.info, COLORS.success],
         borderWidth: 0,
         hoverOffset: 10,
       },
@@ -268,7 +268,7 @@ export default function DashBoardPage() {
     datasets: [
       {
         data: data.request_stats.map((stat) => stat.count),
-        backgroundColor: [COLORS.warning, COLORS.success, COLORS.info],
+        backgroundColor: [COLORS.danger, COLORS.warning, COLORS.success, COLORS.info],
         borderWidth: 0,
         hoverOffset: 10,
       },

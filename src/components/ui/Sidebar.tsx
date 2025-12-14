@@ -82,7 +82,7 @@ const menuItems = [
     name: "Chat",
     icon: <IoChatbubble />,
     path: "/chat",
-    rolesExclude: [""],
+    rolesAllowed: ["staff-customer-care", "admin"],
   },
 ];
 
@@ -94,7 +94,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
   if (role) {
     filteredMenu = menuItems.filter((item) => {
       if (item.rolesAllowed && !item.rolesAllowed.includes(role)) return false;
-      if (item.rolesExclude && item.rolesExclude.includes(role)) return false;
       return true;
     });
   }
