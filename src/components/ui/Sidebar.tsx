@@ -82,7 +82,7 @@ const menuItems = [
     name: "Chat",
     icon: <IoChatbubble />,
     path: "/chat",
-    rolesExclude: ["admin"],
+    rolesExclude: [""],
   },
 ];
 

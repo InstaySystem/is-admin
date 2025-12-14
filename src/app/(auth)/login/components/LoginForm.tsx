@@ -54,7 +54,9 @@ export default function LoginForm() {
       msg.success(res.data.message);
 
       if (res.data.data.user.role === "admin") router.push("/dashboard");
-      else router.push("/manage-booking");
+      else if (res.data.data.user.role === "staff-reception")
+        router.push("/manage-booking");
+      else router.push("/order-services");
     } catch (error: any) {
       msg.error(error);
     }

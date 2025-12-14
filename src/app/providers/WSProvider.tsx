@@ -8,7 +8,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { message } from "antd";
 import { useMessageStore } from "@/stores/useMessageStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { getChatsForGuest } from "@/apis/chat";
@@ -37,7 +36,6 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
 
   const { chats, addMessage, addOrUpdateChat, markRead, setIsHaveNewMessage } =
     useMessageStore();
-  const [msgApi, contextHolder] = message.useMessage();
   const role = useAppStore((s) => s._role);
   console.log("role: ", role);
 
@@ -48,56 +46,47 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const connectWS = () => {
-    const isAdmin = role === "admin";
-    if (isAdmin) {
-      console.log("Admin detected, skipping WS");
-      return;
-    }
-
     if (wsRef.current) {
-      console.log("WS already exists, skip connect");
       return;
     }
 
     shouldReconnect.current = true;
 
     try {
-      if (!isAdmin) {
-        const url = `${process.env.NEXT_PUBLIC_API_URL}/ws`;
-        const ws = new WebSocket(url);
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/ws`;
+      const ws = new WebSocket(url);
 
-        wsRef.current = ws;
+      wsRef.current = ws;
 
-        ws.onopen = () => {
-          console.log("✅ WS Connected");
-          setIsConnected(true);
-          reconnectAttemptsRef.current = 0;
-        };
+      ws.onopen = () => {
+        console.log("WS Connected");
+        setIsConnected(true);
+        reconnectAttemptsRef.current = 0;
+      };
 
-        ws.onmessage = (ev) => {
-          try {
-            const res = JSON.parse(ev.data);
-            handleWSMessage(res);
-          } catch (err) {
-            console.error("WS parse error:", err);
-          }
-        };
+      ws.onmessage = (ev) => {
+        try {
+          const res = JSON.parse(ev.data);
+          handleWSMessage(res);
+        } catch (err) {
+          console.error("WS parse error:", err);
+        }
+      };
 
-        ws.onerror = (e) => {
-          console.error("❌ WS Error", e);
-        };
+      ws.onerror = (e) => {
+        console.error("WS Error", e);
+      };
 
-        ws.onclose = () => {
-          console.log("⚠️ WS Closed");
-          setIsConnected(false);
-          wsRef.current = null;
+      ws.onclose = () => {
+        console.log("WS Closed");
+        setIsConnected(false);
+        wsRef.current = null;
 
-          if (shouldReconnect.current && reconnectAttemptsRef.current < 5) {
-            reconnectAttemptsRef.current++;
-            setTimeout(connectWS, 3000);
-          }
-        };
-      }
+        if (shouldReconnect.current && reconnectAttemptsRef.current < 5) {
+          reconnectAttemptsRef.current++;
+          setTimeout(connectWS, 3000);
+        }
+      };
     } catch (err) {
       console.error("Failed to create WS:", err);
     }
@@ -185,7 +174,6 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
           };
 
           wsRef.current.send(JSON.stringify(payload));
-          console.log("✅ Auto mark_read sent:", chatId);
         }
 
         break;
@@ -207,7 +195,6 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       case "error":
-        // msgApi.error(res.data?.message || "Lỗi không xác định");
         console.log(res);
         break;
 
@@ -240,18 +227,17 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
     const ws = wsRef.current;
 
     if (!ws || ws.readyState !== WebSocket.OPEN) {
-      console.warn("⚠️ WS chưa sẵn sàng, bỏ send:", event);
+      console.warn("WS not ready, exclude send:", event);
       return;
     }
 
     const payload = { event, data, timestamp: Date.now() };
     ws.send(JSON.stringify(payload));
-    console.log("📤 WS Sent:", event, data);
+    console.log("WS Sent:", event, data);
   };
 
   return (
     <WSContext.Provider value={{ sendWS, isConnected, reconnect }}>
-      {contextHolder}
       {children}
     </WSContext.Provider>
   );
