@@ -37,7 +37,9 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
   const { chats, addMessage, addOrUpdateChat, markRead, setIsHaveNewMessage } =
     useMessageStore();
   const role = useAppStore((s) => s._role);
-  console.log("role: ", role);
+  const isAdmin = role === "admin";
+  const isStaff = role?.startsWith("staff");
+
 
   const reconnect = () => {
     if (!isConnected) {
@@ -110,7 +112,7 @@ export const WSProvider = ({ children }: { children: React.ReactNode }) => {
         const currentChat = chats.find((c) => c.id === chatId);
         const selectedChatId = useMessageStore.getState().selectedChatId;
 
-        if (role?.startsWith("staff")) {
+        if (isStaff || isAdmin) {
           try {
             const resChats = await getChatsForAdmin();
             if (resChats.data?.data?.chats) {
