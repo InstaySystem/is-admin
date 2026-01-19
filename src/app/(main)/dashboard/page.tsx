@@ -32,7 +32,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
 );
 
 const COLORS = {
@@ -120,7 +120,7 @@ export default function DashBoardPage() {
         setError(
           err?.response?.data?.message ||
             err?.message ||
-            "Failed to fetch dashboard data"
+            "Failed to fetch dashboard data",
         );
       } finally {
         setLoading(false);
@@ -252,11 +252,16 @@ export default function DashBoardPage() {
   };
 
   const orderServiceData = {
-    labels: data.order_service_stats.map((stat) => stat.status),
+    labels: (data.order_service_stats || []).map((stat) => stat.status),
     datasets: [
       {
-        data: data.order_service_stats.map((stat) => stat.count),
-        backgroundColor: [COLORS.danger, COLORS.warning, COLORS.info, COLORS.success],
+        data: (data.order_service_stats || []).map((stat) => stat.count),
+        backgroundColor: [
+          COLORS.danger,
+          COLORS.warning,
+          COLORS.info,
+          COLORS.success,
+        ],
         borderWidth: 0,
         hoverOffset: 10,
       },
@@ -264,11 +269,16 @@ export default function DashBoardPage() {
   };
 
   const requestData = {
-    labels: data.request_stats.map((stat) => stat.status),
+    labels: (data.request_stats || []).map((stat) => stat.status),
     datasets: [
       {
-        data: data.request_stats.map((stat) => stat.count),
-        backgroundColor: [COLORS.danger, COLORS.warning, COLORS.success, COLORS.info],
+        data: (data.request_stats || []).map((stat) => stat.count),
+        backgroundColor: [
+          COLORS.danger,
+          COLORS.warning,
+          COLORS.success,
+          COLORS.info,
+        ],
         borderWidth: 0,
         hoverOffset: 10,
       },
@@ -393,7 +403,7 @@ export default function DashBoardPage() {
                             data.revenue_source_stats[context.dataIndex]
                               .percentage;
                           return `${context.label}: ${(value / 1000000).toFixed(
-                            2
+                            2,
                           )}M₫ (${percentage}%)`;
                         },
                       },
@@ -490,12 +500,11 @@ export default function DashBoardPage() {
                       ...chartOptions.plugins.tooltip,
                       callbacks: {
                         label: (context) => {
-                          const percentage =
-                            data.order_service_stats[context.dataIndex]
-                              .percentage;
-                          return `${context.label}: ${
-                            context.parsed
-                          } (${percentage.toFixed(1)}%)`;
+                          const stats = data.order_service_stats || [];
+                          const item = stats[context.dataIndex];
+                          const percentage = item ? item.percentage : 0;
+
+                          return `${context.label}: ${context.parsed} (${percentage.toFixed(1)}%)`;
                         },
                       },
                     },
@@ -524,11 +533,11 @@ export default function DashBoardPage() {
                       ...chartOptions.plugins.tooltip,
                       callbacks: {
                         label: (context) => {
-                          const percentage =
-                            data.request_stats[context.dataIndex].percentage;
-                          return `${context.label}: ${
-                            context.parsed
-                          } (${percentage.toFixed(1)}%)`;
+                          const stats = data.request_stats || [];
+                          const item = stats[context.dataIndex];
+                          const percentage = item ? item.percentage : 0;
+
+                          return `${context.label}: ${context.parsed} (${percentage.toFixed(1)}%)`;
                         },
                       },
                     },

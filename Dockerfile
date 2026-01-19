@@ -8,7 +8,8 @@ WORKDIR /app
 
 COPY package.json yarn.lock* ./
 
-RUN yarn install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.yarn \
+  yarn install --frozen-lockfile
 
 FROM base AS builder
 
@@ -22,7 +23,8 @@ COPY --from=deps /app/node_modules ./node_modules
 
 COPY . .
 
-RUN yarn build
+RUN --mount=type=cache,target=/app/.next/cache \
+  yarn build
 
 FROM base AS runner
 
