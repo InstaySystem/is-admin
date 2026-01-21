@@ -142,13 +142,12 @@ export default function CreateServicePage() {
         });
       });
 
-      const createPromise = Promise.all(uploadPromises).then(() => {
-        return createService(payload);
-      });
+      await Promise.all(uploadPromises);
 
-      const [_, res] = await Promise.all([...uploadPromises, createPromise]);
+      const res = await createService(payload);
+
       msg.success(res.data.message);
-      window.location.href = `/manage-services`;
+      window.location.href = `/manage-services/${res.data.data.id}`;
     } catch (err: any) {
       msg.error(err);
     } finally {
